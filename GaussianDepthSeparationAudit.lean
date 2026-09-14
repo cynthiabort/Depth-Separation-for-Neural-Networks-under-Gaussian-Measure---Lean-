@@ -1,0 +1,34 @@
+/-
+Detailed axiom listing for the paper-facing declarations.
+
+Importing GaussianDepthSeparation first runs the mandatory failing audit of every declaration
+in the proof library. The commands below are an optional human-readable report.
+
+Run with:
+  lake env lean GaussianDepthSeparationAudit.lean
+-/
+import GaussianDepthSeparation
+
+#print axioms GaussianDepthSeparation.ridge_lower_bound
+#print axioms GaussianDepthSeparation.depth_separation_lower
+#print axioms GaussianDepthSeparation.depth_separation_upper_L2
+#print axioms GaussianDepthSeparation.depth_separation_comparison
+#print axioms GaussianDepthSeparation.hermite_ridge_identity
+#print axioms GaussianDepthSeparation.ridgeHermite_eq_sum
+#print axioms GaussianDepthSeparation.Pn_comp_rotation
+#print axioms GaussianDepthSeparation.radAvg_eq_starProjection
+#print axioms GaussianDepthSeparation.radAvg_comm_Pn
+#print axioms GaussianDepthSeparation.radAvg_ridge_expansion
+#print axioms GaussianDepthSeparation.sphereMoment_eq_zero_of_odd
+#print axioms GaussianDepthSeparation.sphereMoment_of_even
+#print axioms GaussianDepthSeparation.abs_sphereMoment_le_Kmom
+#print axioms GaussianDepthSeparation.Kmom_eq
+#print axioms GaussianDepthSeparation.correlation_eq_zero_of_odd
+#print axioms GaussianDepthSeparation.correlation_bound_of_even
+#print axioms GaussianDepthSeparation.tail_estimate
+#print axioms GaussianDepthSeparation.radial_polynomial_distance
+#print axioms GaussianDepthSeparation.chi_square_local_density
+#print axioms GaussianDepthSeparation.radialError_weighted_lower
+#print axioms GaussianDepthSeparation.energy_lower_bound
+#print axioms GaussianDepthSeparation.Pge_hasSum
+#print axioms GaussianDepthSeparation.depth_separation_lower_net2
