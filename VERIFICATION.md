@@ -96,37 +96,60 @@ the `Net2` and `Net3` parameter hypotheses.
 
 ## Proof fidelity
 
-All formal proofs follow the paper's mathematical decomposition, with the
-analytic and measure-theoretic details made explicit.  The proof of Theorem 1.3(2) follows the manuscript step by step: the grids
+The proof compatibility review on 2026-10-16 compared the mathematical source
+at commit `1c71f14fd96637069f1271f41a2bc08d15c71161` with the compiled
+`main.pdf` and its `main.tex` source. The reviewed PDF has SHA-256
+`fa0ce413e829e6945cbdd67f38e668a4d14e7e678c5183dc13e58d84c183ada3`;
+the TeX source has SHA-256
+`e1aff3c8a5f15301caa92e4fd8fabe207de12ff53a94694f20e9a9ef3cea63cf`.
+This was a source-level review with automated assistance, not a new human
+review or a formal proof of equivalence between prose and Lean.
+
+No mathematical incompatibility was found. The principal lower- and
+upper-bound arguments agree, and the intermediate estimates have the
+hypotheses and strength needed by the manuscript. Several supporting
+arguments use alternative proofs, and Lean supplies details for claims the
+paper cites or leaves implicit. The correspondence is as follows; source
+paths refer to the modules in the statement map above.
+
+| Paper result | Comparison of the actual arguments |
+| --- | --- |
+| Theorem 1.1 | Both apply the tail estimate, bound the sum of profile norms by `rM`, and rearrange. Lean explicitly separates `A = 0` and proves positivity of the denominator. |
+| Corollary 1.2 | Both use the general Lemma 5.1 to obtain `A ≥ a`, then apply Theorem 1.1 with the smaller error threshold. |
+| Theorem 1.3(1) | Both take `n₀ = d`, `m = 4d√d`, apply Lemma 5.3, use `K_d ≤ 2^(-d/2)`, and invoke Theorem 1.1. |
+| Theorem 1.3(2) | The same clipped-ramp network, interpolation grids, parameter estimates, Gaussian tail bound, and error split are used. The quantitative correspondence is detailed below. |
+| Corollary 1.4 | The manuscript states the corollary without a separate proof. Lean supplies the implied combination: `‖g_i‖₂ ≤ 2B²`, the depth-2 lower bound, and the upper theorem with a common `B = A(d + log(1/ε))`. All constants are chosen before `d` and `ε`. |
+| Lemma 2.1 | The paper compares coefficients in the Hermite generating function. `hermite_ridge_identity` instead uses the three-term recurrence and finite multi-index reindexing. This is an alternative proof of the same identity. |
+| Lemma 2.2 | Both prove that ridge Hermites span a chaos, use homogeneity to extract coefficients, show rotations preserve the span, and use orthogonality to commute with projection. |
+| Proposition 3.1 | The paper uses preservation of the radial subspace and its orthogonal complement. `radAvg_comm_Pn` instead integrates the commutation identity from Lemma 2.2 over Haar measure. The identification of Haar averaging with radial orthogonal projection is proved separately. |
+| Proposition 3.2 | Both average the finite ridge-Hermite expansion and extend by continuity in `L²`. Lean expresses the limit step by applying a continuous linear map to `hermite_hasSum`. |
+| Lemma 3.3 | The current manuscript cites the spherical-moment formula without an in-text proof. Lean supplies coordinate-reflection symmetry for odd moments and Gaussian moment calculations plus a Haar/Fubini radius-direction factorization for even moments. This supplements the cited result. |
+| Proposition 3.4 | For maximality, the paper uses generalized Hölder; Lean integrates a weighted AM-GM inequality and uses coordinate symmetry. For the product formula, the paper uses Funk-Hecke and beta/gamma integrals; `Kmom_eq` instead divides the Gaussian coordinate moment by the radial moment, both computed explicitly. Both parts have alternative proofs. |
+| Proposition 4.1 | Both use radial averaging, vanishing odd moments, the exact radialized-ridge norm identity, and Cauchy-Schwarz. Lean packages the norm calculation as `norm_rho_sq`. |
+| Corollary 4.2 | Both project the error to the tail, expand the square, bound correlations using Proposition 4.1 and monotonicity of `K_n`, and apply Cauchy-Schwarz. Lean first proves finite Bessel and finite-sum estimates, then passes to the limit through the ridge Hermite series. The full tail-series interpretation for arbitrary `F` is also proved in `MultivariateTotality`. |
+| Lemma 5.1 | Both use the minimizing low-chaos projection, characterize radial low-chaos elements as polynomials in `‖x‖²/d`, and change to the normalized chi-square law. Lean makes the characterization explicit using an even axis polynomial; its converse uses injectivity and equality of finite dimensions. `RadialMeasure` proves the radial change of measure using polar integration and normalization. |
+| Lemma 5.2 | The paper uses Stirling for `ρ_d(1) ≳ √d`. Lean obtains that estimate from normalization, the first two gamma moments, and Chebyshev. Both then compare the logarithmic density ratio near `1`; Lean uses `1 - 1/t ≤ log t ≤ t - 1`, with `d ≥ 16`, to obtain the same factor `exp(-1)`. |
+| Lemma 5.3 | Both reduce to polynomial approximation, restrict to the central density window, and count roots to find opposite-sign sine half-periods. Lean selects root-free full periods in the variable `s = mt`, while the paper groups surviving half-periods into maximal runs after `u = πm(t - 1)`. The resulting local lower bound and the factor `c₁/8` agree. |
+
+For Theorem 1.3(2), both proofs use the grids
 `K = ⌈4dR²/η'⌉`, `K' = ⌈2κ(R²+2)/η''⌉` with `η' = η/(8π√d)`, `η'' = η/2`; the
 interpolation errors `4R²/K` and `2κ(R²+2)/K'`; the global bound
 `|𝒩_{R,η}| ≤ 1`; the parameter bound `2(R²+1) + 4π√d`; the radius
 `R² = 2d log 2 + 8 log(4/ε)`; the tail `P(‖X‖ > R) ≤ ε²/16`; and
 `‖F - 𝒩‖² ≤ η² + 4P(‖X‖ > R) ≤ ε²/2 ≤ ε²` with `η = ε/2`.
-Five local arguments elsewhere use equivalent formalization-friendly
-variants:
+The hidden widths are `4dK` and `2K'+1`; the formal intermediate bound on
+their sum implies the paper's bound on their maximum. Lean's squaring
+coefficients are written as secant slopes, which equal `t_j + t_{j+1}`.
 
-1. Lemma 2.1 is proved in Lean from the three-term Hermite recurrence and
-   finite multi-index reindexing, rather than by comparing coefficients in the
-   generating function.
-2. In Lemma 3.3, Lean proves the radius-direction moment factorization by a
-   Haar/Fubini argument, avoiding a separate formal independence theorem for
-   Gaussian radius and direction.
-3. In Proposition 3.4, the manuscript invokes generalized Hölder.  Lean uses
-   its pointwise weighted-AM--GM consequence and then integrates, giving the
-   same maximal-moment inequality.
-4. In Lemma 5.2, the manuscript invokes Stirling to lower-bound `ρ(1)`.  Lean
-   obtains the same `ρ(1) ≳ √d` estimate from normalization, the exact first two
-   gamma moments, and Chebyshev; the subsequent logarithmic density comparison
-   is the manuscript's argument.
-5. Lemma 5.3 uses root-free full periods rather than arranging surviving
-   half-periods into maximal runs.  Each root-free period contains a half-period
-   on which the sine and polynomial have opposite signs, so this is the same
-   sign-change/root-counting argument with slightly simpler bookkeeping.
-
-In Lemma 5.3, the local-density and oscillation estimates give the squared-norm
-bound `c₁/8`. Both the manuscript and Lean retain this factor and take
-`c = √(c₁/8)`, proving the stated existential lemma.
+In Lemma 5.3 the two rescalings are related by `u = π(s - m)`, so Lean's
+window `[m - m/√d, m + m/√d]` is exactly the paper's rescaled central
+window. Each root-free full period contributes at least `1/2` in the `s`
+coordinate, and the counting argument supplies at least `m/(4√d)` usable
+periods. The zero polynomial is handled separately. After changing variables
+back, both proofs obtain an unweighted local error at least `1/(8√d)` and
+a weighted squared error at least `c₁/8`. Both take `c = √(c₁/8)`.
+Lean's explicit witnesses are `c₁ = exp(-2)/8` and `d₀ = 16`; the
+manuscript only requires positive universal constants.
 
 In particular, the proofs of Lemmas 5.1--5.3 retain the manuscript's chain:
 radial low-chaos elements are identified with polynomials in `‖x‖²/d`, the
@@ -138,6 +161,14 @@ The upper-bound formalization realizes the constant term of `𝒩_sin` by one
 constant second-layer unit, exactly as described in the manuscript, so `Net3`
 itself has the paper's displayed architecture, with no separate affine output
 bias.
+
+The review required no changes to mathematical declarations or proof terms.
+It expands the previous proof-fidelity notes, in particular recording the
+alternative product-formula proof and the different proof of Proposition 3.1.
+The local build and axiom audit covered 927 declarations and admitted only
+`propext`, `Classical.choice`, and `Quot.sound`; the standalone audit
+regression tests also passed. These checks used existing local dependencies,
+with a `batteries` checkout warning, rather than a fresh dependency rebuild.
 
 ## Organization and dead-code audit
 
