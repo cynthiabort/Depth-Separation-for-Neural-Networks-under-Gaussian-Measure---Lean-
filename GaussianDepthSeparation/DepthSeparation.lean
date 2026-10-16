@@ -10,7 +10,7 @@ open scoped RealInnerProductSpace
 
 noncomputable section
 
-/- LaTeX — `main.tex`, Theorem 1.3(1): "Let $F(x)=\sin(4\pi d^{1/2}\|x\|^2)$.
+/- LaTeX — `main.tex`, Theorem 1.3(i): "Let $F(x)=\sin(4\pi d^{1/2}\|x\|^2)$.
 Then, there are universal constants $c>0$ and $d_0$ such that for every even
 $d\ge d_0$ the following holds: Let $M>0$. For all
 $g_1,\ldots,g_r\in L^2(\gamma)$ with $\|g_j\|_{L^2(\gamma)}\le M$ and all

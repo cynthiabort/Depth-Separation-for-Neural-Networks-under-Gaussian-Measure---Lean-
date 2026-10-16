@@ -220,7 +220,7 @@ theorem Kmom_pos {d : ℕ} (hd : 0 < d) {n : ℕ} (hn : Even n) :
   have hd' : (0 : ℝ) < d := by exact_mod_cast hd
   positivity
 
-/-- `K` is nonincreasing along even degrees (used in Cor 5.1). -/
+/-- `K` is nonincreasing along even degrees (used in Corollary 4.2). -/
 theorem Kmom_antitone {d : ℕ} (hd : 0 < d) {n n' : ℕ} (hn : Even n)
     (hn' : Even n') (h : n ≤ n') :
     Kmom d n' ≤ Kmom d n := by
@@ -237,9 +237,9 @@ theorem Kmom_antitone {d : ℕ} (hd : 0 < d) {n n' : ℕ} (hn : Even n)
   push_cast
   linarith
 
-/- LaTeX — `main.tex`, Remark after Proposition 3.4: "when $d \ge n$,
+/- LaTeX — `main.tex`, Remark 3.5: "when $d \ge n$,
 $K_n \le (n/(d+n))^{n/2}$." -/
-/-- Remark after Proposition 3.4 (used in Theorem 1.3(i)). -/
+/-- Remark 3.5 (used in Theorem 1.3(i)). -/
 theorem Kmom_le_pow {d n : ℕ} (hd : 0 < d) (hn : Even n) (hnd : n ≤ d) :
     Kmom d n ≤ ((n : ℝ) / (d + n)) ^ (n / 2) := by
   rw [Kmom_eq hd hn]
