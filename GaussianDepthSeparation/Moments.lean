@@ -1,6 +1,6 @@
 /-
 GaussianDepthSeparation §3 — Spherical Moments (Lemma 3.3, Proposition 3.4, and the
-remark `K_n ≤ (n/(d+n))^{n/2}` used by Theorem 1.2(i)).
+remark `K_n ≤ (n/(d+n))^{n/2}` used by Theorem 1.3(i)).
 
 Built on `MomentsCore`: odd vanishing, the factorization
 `𝔼[X^α] = 𝔼[‖X‖^n]·𝔼[V^α]`, product moments and the Stein-sum norm moments.
@@ -85,19 +85,19 @@ lemma integral_mpow_gaussian_even {d : ℕ} {α : MIdx d} (hα : ∀ i, Even (α
 
 /-! ### Lemma 3.3, even case -/
 
-/- LaTeX — `paper.tex`, Lemma 3.3:
+/- LaTeX — `main.tex`, Lemma 3.3:
 "If all $\alpha_i$ are even, then
 $$\mathbb{E}[V^\alpha] = \frac{\frac{\alpha!}{(\alpha/2)!}}
-{\sum_{|\eta|=n,\ \eta\ {\rm even}}\frac{(n/2)!}{(\eta/2)!}\frac{\eta!}{(\eta/2)!}}.$$"
+{\sum_{|\beta|=n,\ \beta\ {\rm even}}\frac{(n/2)!}{(\beta/2)!}\frac{\beta!}{(\beta/2)!}}.$$"
 -/
 /-- **Lemma 3.3, even case.** -/
 theorem sphereMoment_of_even {d : ℕ} (hd : 0 < d) {α : MIdx d}
     (hα : ∀ i, Even (α i)) :
     sphereMoment d α =
       ((mfact α : ℝ) / (mfact (halfIdx α) : ℝ)) /
-        (∑ η ∈ (idxOf d (mdeg α)).filter (fun η => ∀ i, Even (η i)),
-          (((mdeg α / 2)! : ℝ) / (mfact (halfIdx η) : ℝ)) *
-            ((mfact η : ℝ) / (mfact (halfIdx η) : ℝ))) := by
+        (∑ β ∈ (idxOf d (mdeg α)).filter (fun β => ∀ i, Even (β i)),
+          (((mdeg α / 2)! : ℝ) / (mfact (halfIdx β) : ℝ)) *
+            ((mfact β : ℝ) / (mfact (halfIdx β) : ℝ))) := by
   set n := mdeg α with hn
   set m := mdeg (halfIdx α) with hm
   have hnm : n = 2 * m := (mdeg_halfIdx hα).symm
@@ -194,8 +194,10 @@ lemma integral_mpow_Kidx {d : ℕ} (hd : 0 < d) (n : ℕ) :
     norm_num [Nat.doubleFactorial]
   rw [hrest, mul_one, ite_eq_left rfl]
 
-/- LaTeX — `paper.tex`, Proposition 3.4 (The maximal even moment): "For even $n$ …
-$$K_n = \prod_{i=0}^{n/2-1}\frac{2i+1}{d+2i}.$$" -/
+/- LaTeX — `main.tex`, Proposition 3.4: "Assume $d\ge 1$. … For even $n\ge 0$,
+set $K_n:=\mathbb E[V_1^n]$ (so that $K_0=1$). … Moreover,
+$$K_n = \frac{(n-1)(n-3)\cdots 1}{d(d+2)\cdots(d+n-2)}
+  = \prod_{i=0}^{n/2-1}\frac{2i+1}{d+2i}.$$" -/
 /-- **Proposition 3.4, closed form.** -/
 theorem Kmom_eq {d : ℕ} (hd : 0 < d) {n : ℕ} (hn : Even n) :
     Kmom d n = ∏ i ∈ Finset.range (n / 2), ((2 * i + 1 : ℝ) / (d + 2 * i)) := by
@@ -263,9 +265,9 @@ theorem Kmom_antitone {d : ℕ} (hd : 0 < d) {n n' : ℕ} (hn : Even n)
   push_cast
   linarith
 
-/- LaTeX — `paper.tex`, Remark after Proposition 3.4: "when $d \ge n$,
+/- LaTeX — `main.tex`, Remark after Proposition 3.4: "when $d \ge n$,
 $K_n \le (n/(d+n))^{n/2}$." -/
-/-- Remark after Proposition 3.4 (used in Theorem 1.2(i)). -/
+/-- Remark after Proposition 3.4 (used in Theorem 1.3(i)). -/
 theorem Kmom_le_pow {d n : ℕ} (hd : 0 < d) (hn : Even n) (hnd : n ≤ d) :
     Kmom d n ≤ ((n : ℝ) / (d + n)) ^ (n / 2) := by
   rw [Kmom_eq hd hn]
@@ -284,7 +286,7 @@ theorem Kmom_le_pow {d n : ℕ} (hd : 0 < d) (hn : Even n) (hnd : n ≤ d) :
     _ = ((n : ℝ) / (d + n)) ^ (n / 2) := by
         rw [Finset.prod_const, Finset.card_range]
 
-/-- `K_d ≤ 2^{−d/2}` (LaTeX — `paper.tex`, proof of Theorem 1.2(i):
+/-- `K_d ≤ 2^{−d/2}` (LaTeX — `main.tex`, proof of Theorem 1.3(i):
 "$K_d \le (d/(d+d))^{d/2} = 2^{-d/2}$"). -/
 theorem Kmom_le_two_pow {d : ℕ} (hd : 0 < d) (hde : Even d) :
     Kmom d d ≤ (2 : ℝ) ^ (-(d : ℝ) / 2) := by
@@ -371,8 +373,9 @@ lemma sphereMoment_single {d : ℕ} (hd : 0 < d) (n : ℕ) (i : Fin d) :
     · rw [ite_eq_right h, ite_eq_right (fun hc => h (hiff.mp hc))]
   rw [← hcomp, sphereMoment_comp_perm]
 
-/- LaTeX — `paper.tex`, Proposition 3.4: "Moreover, for every $\alpha$ with
-$|\alpha| = n$, $|\mathbb{E}[V^\alpha]| \le K_n$." -/
+/- LaTeX — `main.tex`, Proposition 3.4: "Assume $d\ge 1$. … For even $n\ge 0$,
+set $K_n:=\mathbb E[V_1^n]$. Then $|\mathbb{E}[V^\alpha]|\le K_n$ for every
+$\alpha\in\mathbb N^d$ with $|\alpha|=n$." -/
 /-- **Proposition 3.4, maximality** (weighted AM–GM + coordinate symmetry). -/
 theorem abs_sphereMoment_le_Kmom {d : ℕ} (hd : 0 < d) {α : MIdx d} {n : ℕ}
     (hα : mdeg α = n) (hn : Even n) :

@@ -69,7 +69,7 @@ lemma sphereMoment_comp_map {d : ℕ} (α : MIdx d) {T : Vec d → Vec d}
   have hx : (‖T x‖⁻¹ • T x : Vec d) = ‖x‖⁻¹ • T x := by rw [hnorm]
   rw [hx]
 
-/-- **Odd sphere moments vanish** (LaTeX — `paper.tex`, Lemma 3.3:
+/-- **Odd sphere moments vanish** (LaTeX — `main.tex`, Lemma 3.3:
 "If some $\alpha_i$ is odd, then $\mathbb{E}[V^\alpha] = 0$"). -/
 theorem sphereMoment_eq_zero_of_odd {d : ℕ} {α : MIdx d}
     (hα : ∃ i, ¬ Even (α i)) : sphereMoment d α = 0 := by
@@ -307,7 +307,7 @@ lemma norm_pow_expand {d : ℕ} (m : ℕ) (x : Vec d) :
   exact Finset.sum_congr rfl fun β _ => by rw [mpow_sq]
 
 /-- **The Gaussian norm moments**:
-`𝔼‖X‖^{2m} = d(d+2)⋯(d+2m−2)` (LaTeX — `paper.tex` §3:
+`𝔼‖X‖^{2m} = d(d+2)⋯(d+2m−2)` (LaTeX — `main.tex` §3:
 "$\mathbb{E}[\|G\|_2^{2m}] = \prod_{i=0}^{m-1}(d+2i)$"). -/
 theorem integral_norm_pow_even (d m : ℕ) :
     ∫ x, ‖x‖ ^ (2 * m) ∂(γ d) = ∏ i ∈ Finset.range m, ((d : ℝ) + 2 * i) := by
@@ -341,7 +341,7 @@ lemma integrable_norm_pow (d n : ℕ) :
 
 /-! ### The radius–direction factorization (Haar trick with a weight) -/
 
-/-- **The factorization** `𝔼[X^α] = 𝔼[‖X‖^{|α|}]·𝔼[V^α]` (LaTeX — `paper.tex` §3:
+/-- **The factorization** `𝔼[X^α] = 𝔼[‖X‖^{|α|}]·𝔼[V^α]` (LaTeX — `main.tex` §3:
 "$\mathbb{E}[G^\alpha] = \mathbb{E}[\|G\|_2^n]\mathbb{E}[V^\alpha]$"). -/
 theorem mpow_factor {d : ℕ} (hd : 0 < d) (α : MIdx d) :
     ∫ x, mpow x α ∂(γ d)

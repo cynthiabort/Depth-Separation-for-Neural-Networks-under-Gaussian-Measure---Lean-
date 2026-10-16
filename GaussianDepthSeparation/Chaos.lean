@@ -373,7 +373,7 @@ lemma starProjection_comm_isometry {d : ℕ} (K : Submodule ℝ (L2 d))
     rw [real_inner_comm]
     exact hmem w' hw'
 
-/- LaTeX — `paper.tex`, Lemma 2.2 (Rotation invariance of the chaos projections):
+/- LaTeX — `main.tex`, Lemma 2.2 (Rotation invariance of the chaos projections):
 "For every $U \in O(d)$ and every $f \in L^2(\gamma^d)$,
 $$P_n(f\circ U) = (P_n f)\circ U.$$"
 -/

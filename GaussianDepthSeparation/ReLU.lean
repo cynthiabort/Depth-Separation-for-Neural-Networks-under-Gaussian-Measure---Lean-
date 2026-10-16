@@ -1,5 +1,5 @@
 /-
-GaussianDepthSeparation — ReLU network formalism (for Theorem 1.2(ii)).
+GaussianDepthSeparation — ReLU network formalism (for Theorem 1.3(ii)).
 
 Self-contained, finite-dimensional definitions: `relu`, depth-3 networks
 (two hidden ReLU layers, no output bias), evaluation, width and weight bounds.

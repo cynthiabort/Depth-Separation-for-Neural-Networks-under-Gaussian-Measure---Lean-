@@ -399,7 +399,10 @@ lemma chiSqDensity_one_lower {d : ℕ} (hd : 16 ≤ d) :
   apply (div_le_iff₀ (mul_pos (by norm_num) he)).2
   nlinarith [hmul]
 
-/- LaTeX — `paper.tex`, Lemma 5.2. -/
+/- LaTeX — `main.tex`, Lemma 5.2: "There exist universal constants
+$c_1,d_0>0$ such that, for every $d\ge d_0$, the density $\rho_d$ satisfies
+$\rho_d(t)\ge c_1\sqrt d$ for every $t\in[1-1/\sqrt d,\,1+1/\sqrt d]$."
+Here the constants are explicit: `c₁ = exp(-2)/8` and `d₀ = 16`. -/
 /-- **Lemma 5.2 (local normalized chi-square density bound).** -/
 theorem chi_square_local_density (d : ℕ) (hd : 16 ≤ d) (t : ℝ)
     (ht : t ∈ Set.Icc (1 - 1 / Real.sqrt d) (1 + 1 / Real.sqrt d)) :

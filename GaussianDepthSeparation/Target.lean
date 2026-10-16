@@ -12,7 +12,7 @@ noncomputable section
 
 /-! ## The radial sine target
 
-LaTeX — `paper.tex` §5: "For parameters $d, m > 0$, define the radial function
+LaTeX — `main.tex` §5: "For parameters $d, m > 0$, define the radial function
 $F(x) = \sin\!\left(\pi m\,\frac{\|x\|^2}{d}\right)$ … well-defined in
 $L^2(\gamma^d)$ since $|F| \le 1$."
 -/
@@ -26,11 +26,17 @@ theorem memLp_radialSineFun (d : ℕ) (m : ℝ) :
 /-- `F(x) = sin(π m ‖x‖²/d)` as an element of `L²(γ^d)`. -/
 def radialSine (d : ℕ) (m : ℝ) : L2 d := (memLp_radialSineFun d m).toLp
 
-/-- LaTeX — `paper.tex`, Theorem 1.2: "$F(x) = \sin\!\bigl(4\pi d^{1/2}\|x\|^2\bigr)$",
+/-- The radial sine as a function of the normalized squared radius. -/
+theorem radialSine_coeFn (d : ℕ) (m : ℝ) :
+    ⇑(radialSine d m) =ᵐ[γ d] fun x => Real.sin (π * m * (‖x‖ ^ 2 / d)) := by
+  simpa only [radialSine, mul_div_assoc] using
+    (MemLp.coeFn_toLp (memLp_radialSineFun d m))
+
+/-- LaTeX — `main.tex`, Theorem 1.3: "$F(x) = \sin\!\bigl(4\pi d^{1/2}\|x\|^2\bigr)$",
 i.e. `radialSine` with `m = 4d^{3/2}`. -/
 def sepTarget (d : ℕ) : L2 d := radialSine d (4 * d * Real.sqrt d)
 
-/-- The target from Theorem 1.2 in its displayed pointwise form. -/
+/-- The target from Theorem 1.3 in its displayed pointwise form. -/
 theorem sepTarget_coeFn (d : ℕ) (hd : 0 < d) :
     (sepTarget d : Vec d → ℝ) =ᵐ[γ d]
       fun x => Real.sin (4 * π * Real.sqrt d * ‖x‖ ^ 2) := by

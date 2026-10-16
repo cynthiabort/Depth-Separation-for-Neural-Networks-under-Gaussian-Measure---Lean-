@@ -387,7 +387,7 @@ def hermBasis : HilbertBasis ℕ ℝ L2R :=
     (by rw [span_hermNorm_eq]; exact hermite_span_orthogonal_eq_bot)
 
 /-- **The Hermite expansion** `g = ∑ₙ (⟨g,hₙ⟩/n!)·hₙ` in `L²(γ)`
-(LaTeX — `paper.tex` §3: "Its Hermite expansion in $L^2(\gamma)$ is
+(LaTeX — `main.tex` §3: "Its Hermite expansion in $L^2(\gamma)$ is
 $g = \sum_{n=0}^\infty \frac{\langle g, h_n\rangle}{n!}h_n$"). -/
 theorem hermite_hasSum (g : L2R) :
     HasSum (fun n => (⟪g, hermiteL2 n⟫ / (n ! : ℝ)) • hermiteL2 n) g := by

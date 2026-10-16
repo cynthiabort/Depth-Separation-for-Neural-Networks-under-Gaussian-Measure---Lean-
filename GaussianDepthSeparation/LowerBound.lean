@@ -287,7 +287,11 @@ theorem cross_bound {d : ℕ} (hd : 0 < d) {n₀ : ℕ} (hn₀ : Even n₀)
 
 /-! ### Corollary 4.2 and Theorem 1.1 -/
 
-/- LaTeX — `paper.tex`, Corollary 4.2 (Tail estimate): see file header. -/
+/- LaTeX — `main.tex`, Corollary 4.2: "Let $n_0$ be even. Then, for any radial
+$F\in L^2(\gamma^d)$ and any $g_1,\ldots,g_r\in L^2(\gamma)$ and
+$v_1,\ldots,v_r\in S^{d-1}$,
+$$\Bigl\|F-\sum_{j=1}^r g_j^{v_j}\Bigr\|^2 \ge \|P_{\ge n_0}F\|^2
+  - 2\sqrt{K_{n_0}}\,\|P_{\ge n_0}F\|\sum_{j=1}^r\|g_j\|_{L^2(\gamma)}.$$" -/
 /-- **Corollary 4.2 (Tail estimate).** -/
 theorem tail_estimate {d : ℕ} (hd : 0 < d) {n₀ : ℕ} (hn₀ : Even n₀)
     (F : L2 d) (hF : IsRadial F) {r : ℕ} (g : Fin r → L2R) (v : Fin r → Vec d)
@@ -320,7 +324,12 @@ theorem tail_estimate {d : ℕ} (hd : 0 < d) {n₀ : ℕ} (hn₀ : Even n₀)
       ≤ ‖PF‖ ^ 2 - 2 * ⟪PF, PS⟫ := by rw [hcross]; nlinarith [hbound]
     _ ≤ ‖PF‖ ^ 2 - 2 * ⟪PF, PS⟫ + ‖PS‖ ^ 2 := by nlinarith [sq_nonneg ‖PS‖]
 
-/- LaTeX — `paper.tex`, Theorem 1.1 (Lower bound for ridge approximation). -/
+/- LaTeX — `main.tex`, Theorem 1.1: "Let $n_0$ be even, let
+$F\in L^2(\gamma^d)$ be radial and set $A=\|P_{\ge n_0}F\|_{L^2(\gamma^d)}$. Let
+$M>0$, and let $g_1,\ldots,g_r\in L^2(\gamma)$ with $\|g_j\|_{L^2(\gamma)}\le M$
+and $v_1,\ldots,v_r\in S^{d-1}$. If
+$\|F-\sum_{j=1}^r g_j(\langle v_j,\cdot\rangle)\|_{L^2(\gamma^d)}^2\le A^2/2$,
+then $r\ge\frac{A}{4M\sqrt{K_{n_0}}}$." -/
 /-- **Theorem 1.1 (Lower bound for ridge approximation).** -/
 theorem ridge_lower_bound {d : ℕ} (hd : 0 < d) {n₀ : ℕ} (hn₀ : Even n₀)
     (F : L2 d) (hF : IsRadial F) {r : ℕ} (g : Fin r → L2R) (v : Fin r → Vec d)

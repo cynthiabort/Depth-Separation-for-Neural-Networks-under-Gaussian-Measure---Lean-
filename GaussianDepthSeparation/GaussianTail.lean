@@ -1,6 +1,7 @@
 /-
-GaussianDepthSeparation — an explicit Gaussian norm tail used to pass from approximation on a
-ball to approximation in `L²(γ^d)`.
+GaussianDepthSeparation — the Gaussian norm tail `P(‖X‖ > R) ≤ 2^{d/2} e^{-R²/4}` used in the
+proof of Theorem 1.3(ii) to pass from approximation on a ball to approximation
+in `L²(γ^d)`.
 -/
 import GaussianDepthSeparation.GaussianSpace
 import Mathlib.Tactic.FieldSimp
@@ -93,11 +94,12 @@ lemma integral_exp_quarter_norm_sq_gaussD (d : ℕ) :
   rw [Finset.prod_const, show gaussianReal 0 1 = γ₁ from rfl]
   rw [integral_exp_quarter_sq_gaussian, Finset.card_univ, Fintype.card_fin]
 
-/-- Chernoff bound for the norm of a standard Gaussian vector.  The slightly
-loose factor `2^d` keeps the downstream radius algebra elementary. -/
+/-- Chernoff bound for the norm of a standard Gaussian vector, exactly as in
+the proof of Theorem 1.3(ii):
+`P(‖X‖ > R) ≤ E[exp(‖X‖²/4)]·exp(-R²/4) = 2^{d/2}·exp(-R²/4)`. -/
 theorem gaussian_norm_tail (d : ℕ) {R : ℝ} (hR : 0 ≤ R) :
     (γ d).real {x : Vec d | R < ‖x‖} ≤
-      (2 : ℝ) ^ d * Real.exp (-(R ^ 2) / 4) := by
+      (2 : ℝ) ^ ((d : ℝ) / 2) * Real.exp (-(R ^ 2) / 4) := by
   let f : Vec d → ℝ := fun x => Real.exp (‖x‖ ^ 2 / 4)
   let a : ℝ := Real.exp (R ^ 2 / 4)
   have ha : 0 < a := Real.exp_pos _
@@ -112,23 +114,20 @@ theorem gaussian_norm_tail (d : ℕ) {R : ℝ} (hR : 0 ≤ R) :
     linarith
   have hmeasure : (γ d).real {x : Vec d | R < ‖x‖} ≤
       (γ d).real {x | a ≤ f x} := measureReal_mono hsub
-  have hint : ∫ x, f x ∂(γ d) = (Real.sqrt 2) ^ d :=
-    integral_exp_quarter_norm_sq_gaussD d
-  have hsqrt_sq : Real.sqrt 2 ^ 2 = 2 := Real.sq_sqrt (by norm_num)
-  have hsqrt_nonneg : 0 ≤ Real.sqrt 2 := Real.sqrt_nonneg 2
-  have hsqrt : Real.sqrt 2 ≤ 2 := by nlinarith
-  have hpow : (Real.sqrt 2) ^ d ≤ (2 : ℝ) ^ d := pow_le_pow_left₀ (Real.sqrt_nonneg _) hsqrt d
-  have hmul : a * (γ d).real {x : Vec d | R < ‖x‖} ≤ (2 : ℝ) ^ d := by
+  have hint : ∫ x, f x ∂(γ d) = (2 : ℝ) ^ ((d : ℝ) / 2) := by
+    rw [integral_exp_quarter_norm_sq_gaussD d, Real.sqrt_eq_rpow,
+      ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num)]
+    ring_nf
+  have hmul : a * (γ d).real {x : Vec d | R < ‖x‖} ≤ (2 : ℝ) ^ ((d : ℝ) / 2) := by
     calc a * (γ d).real {x : Vec d | R < ‖x‖}
         ≤ a * (γ d).real {x | a ≤ f x} := mul_le_mul_of_nonneg_left hmeasure ha.le
       _ ≤ ∫ x, f x ∂(γ d) := hmark
-      _ = (Real.sqrt 2) ^ d := hint
-      _ ≤ (2 : ℝ) ^ d := hpow
-  have hdiv : (γ d).real {x : Vec d | R < ‖x‖} ≤ (2 : ℝ) ^ d / a :=
+      _ = (2 : ℝ) ^ ((d : ℝ) / 2) := hint
+  have hdiv : (γ d).real {x : Vec d | R < ‖x‖} ≤ (2 : ℝ) ^ ((d : ℝ) / 2) / a :=
     (le_div_iff₀ ha).2 (by simpa [mul_comm] using hmul)
   calc (γ d).real {x : Vec d | R < ‖x‖}
-      ≤ (2 : ℝ) ^ d / a := hdiv
-    _ = (2 : ℝ) ^ d * Real.exp (-(R ^ 2) / 4) := by
+      ≤ (2 : ℝ) ^ ((d : ℝ) / 2) / a := hdiv
+    _ = (2 : ℝ) ^ ((d : ℝ) / 2) * Real.exp (-(R ^ 2) / 4) := by
       dsimp [a]
       rw [div_eq_mul_inv, ← Real.exp_neg]
       congr 2

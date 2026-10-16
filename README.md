@@ -4,10 +4,12 @@ Lean 4 formalization of *Depth Separation for Neural Networks under Gaussian
 Measure* by Cynthia Bortolotto, Francisco Ganacim, and Roberto I. Oliveira.
 
 The library is named `GaussianDepthSeparation`. It contains the proofs of all
-fourteen numbered results of the paper, including the matched-parameter
-comparison in Corollary 1.3, and the supporting analytic results. See
-[VERIFICATION.md](VERIFICATION.md) for the paper-to-Lean map, the human statement
-review status reported by the manuscript, and the local proof variants.
+fifteen numbered results of the paper, including the polynomial criterion in
+Corollary 1.2, the matched-parameter comparison in Corollary 1.4, and Lemma 5.1
+for arbitrary measurable radial profiles (including profiles defined only on
+`[0, ∞)`). It also contains the supporting analytic results. See
+[VERIFICATION.md](VERIFICATION.md) for the paper-to-Lean map, the statement
+review status for this source version, and the local proof variants.
 
 ## Build
 
@@ -47,9 +49,12 @@ All declarations below are in the `GaussianDepthSeparation` namespace.
 | Paper result | Lean declaration | Source |
 | --- | --- | --- |
 | Theorem 1.1 | `ridge_lower_bound` | [LowerBound.lean](GaussianDepthSeparation/LowerBound.lean) |
-| Theorem 1.2(i) | `depth_separation_lower` | [DepthSeparation.lean](GaussianDepthSeparation/DepthSeparation.lean) |
-| Theorem 1.2(ii) | `depth_separation_upper_L2` | [GlobalUpper.lean](GaussianDepthSeparation/GlobalUpper.lean) |
-| Corollary 1.3 | `depth_separation_comparison` | [DepthComparison.lean](GaussianDepthSeparation/DepthComparison.lean) |
+| Corollary 1.2 | `polynomial_criterion` | [PolynomialCriterion.lean](GaussianDepthSeparation/PolynomialCriterion.lean) |
+| Theorem 1.3 | `depth_separation` | [DepthSeparationTheorem.lean](GaussianDepthSeparation/DepthSeparationTheorem.lean) |
+| Theorem 1.3(1) | `depth_separation_lower` | [DepthSeparation.lean](GaussianDepthSeparation/DepthSeparation.lean) |
+| Theorem 1.3(2) | `depth_separation_upper_L2` | [GlobalUpper.lean](GaussianDepthSeparation/GlobalUpper.lean) |
+| Corollary 1.4 | `depth_separation_comparison` | [DepthComparison.lean](GaussianDepthSeparation/DepthComparison.lean) |
+| Lemma 5.1 | `radial_polynomial_distance`, `radial_polynomial_distance_nonneg` | [RadialDistance.lean](GaussianDepthSeparation/RadialDistance.lean) |
 
 ## Organization
 
@@ -63,5 +68,5 @@ All declarations below are in the `GaussianDepthSeparation` namespace.
 
 The repository contains the standalone formalization, without the dependency
 visualization, generated web assets, or historical working notes. Source
-comments referring to `paper.tex` identify statements in the companion
-manuscript; the manuscript itself is not bundled here.
+comments referring to `main.tex` quote statements of the companion
+manuscript, with its numbering; the manuscript itself is not bundled here.

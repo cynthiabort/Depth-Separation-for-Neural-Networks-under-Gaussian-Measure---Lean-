@@ -9,17 +9,29 @@ project-defined axioms, and native-evaluation axioms fail the build.
 The default `lake build` also runs the standalone `GaussianDepthSeparationAuditTests` regression
 tests, whose deliberately untrusted fixtures are outside the mathematical
 library. `GaussianDepthSeparationAudit.lean` retains the optional detailed axiom listing.
-The main theorems and the numbered results in
-Sections 2--5 are formally verified, including the radial polynomial distance
-(Lemma 5.1), the local normalized chi-square density bound (Lemma 5.2), and the
-paper's sign-change proof of the high-chaos energy bound (Lemma 5.3).
-All fourteen numbered results have direct Lean counterparts. Corollary 1.3
-is formalized by `depth_separation_comparison`, which combines the two depth
-bounds with a common parameter budget and error tolerance. Its positive
-asymptotic constants are quantified before dimension and accuracy, and its
-dimension threshold is explicitly `16`. As reported in the companion manuscript,
-the Lean statements corresponding to all numbered results have been reviewed
-by a human to confirm that they express the intended mathematical claims.
+All fifteen numbered results of `main.tex` (Theorems 1.1 and 1.3,
+Corollaries 1.2, 1.4 and 4.2, Lemmas 2.1, 2.2, 3.3, 5.1, 5.2, 5.3, and
+Propositions 3.1, 3.2, 3.4, 4.1) have direct Lean counterparts whose statements
+match the manuscript. Where the paper says "there exist universal constants",
+Lean either quantifies them existentially in the same order (Theorem 1.3:
+`depth_separation`; Corollary 1.4: `depth_separation_comparison`) or provides
+explicit witnesses (Lemma 5.2: `c₁ = exp(-2)/8`, `d₀ = 16`; Lemma 5.3 and
+Theorem 1.3(1): `c = cEnergy`, `d₀ = 16`).
+
+Review status: the manuscript reports human review of an earlier version.
+That report does not cover the generalized Lemma 5.1
+(`radial_polynomial_distance`, with `radial_polynomial_distance_nonneg` for
+profiles on `[0, ∞)`), Corollary 1.2 (`polynomial_criterion`), the combined
+Theorem 1.3 (`depth_separation`), the revised upper-bound statement
+(`depth_separation_upper_L2`), or the revised Corollary 1.4
+(`depth_separation_comparison`). These statements have been checked against
+the manuscript with automated assistance and checked by Lean; this is not a
+claim of a new human review.
+
+Source references in the manuscript identify modules and declarations in the
+companion source version. The former reference to commit `aff4b42` does not
+identify the revised statements and must not be used as their source. Use the
+Git revision containing this verification map to identify the revised source.
 
 This audit covers the standalone `GaussianDepthSeparation` library. Module paths
 in the table below are relative to `GaussianDepthSeparation/`.
@@ -29,18 +41,21 @@ in the table below are relative to `GaussianDepthSeparation/`.
 | Paper result | Lean declaration(s) | Module |
 | --- | --- | --- |
 | Theorem 1.1 (ridge lower bound) | `ridge_lower_bound` | `LowerBound.lean` |
-| Theorem 1.2(i) (depth-2 lower bound) | `depth_separation_lower` | `DepthSeparation.lean` |
-| Theorem 1.2(ii) (global depth-3 upper bound) | `depth_separation_upper_L2` | `GlobalUpper.lean` |
-| Corollary 1.3 (matched parameter and accuracy budgets) | `depth_separation_comparison` | `DepthComparison.lean` |
+| Corollary 1.2 (polynomial criterion) | `polynomial_criterion` | `PolynomialCriterion.lean` |
+| Theorem 1.3 (depth separation, both parts, existential constants) | `depth_separation` | `DepthSeparationTheorem.lean` |
+| Theorem 1.3(1) with explicit constants | `depth_separation_lower` | `DepthSeparation.lean` |
+| Theorem 1.3(2) (global depth-3 upper bound) | `depth_separation_upper_L2`, `depth_separation_upper_L2_explicit` | `GlobalUpper.lean` |
+| Corollary 1.4 (matched depth comparison) | `depth_separation_comparison` | `DepthComparison.lean` |
 | Lemma 2.1 (Hermite ridge identity) | `hermite_ridge_identity`, `ridgeHermite_eq_sum` | `Hermite.lean`, `Chaos.lean` |
 | Lemma 2.2 (rotations commute with chaos projections) | `Pn_comp_rotation` | `Chaos.lean` |
 | Proposition 3.1 (radialization commutes with chaos projections) | `radAvg_eq_starProjection`, `radAvg_comm_Pn` | `RadialAverage.lean` |
 | Proposition 3.2 (radialized ridge expansion) | `radAvg_ridge_expansion` | `Radialization.lean` |
 | Lemma 3.3 (spherical moments) | `sphereMoment_eq_zero_of_odd`, `sphereMoment_of_even` | `MomentsCore.lean`, `Moments.lean` |
-| Proposition 3.4 (maximal spherical moment and product formula) | `abs_sphereMoment_le_Kmom`, `Kmom_eq` | `Moments.lean` |
+| Proposition 3.4 (maximal spherical moment and product formula, `d ≥ 1`, even `n ≥ 0`) | `abs_sphereMoment_le_Kmom`, `Kmom_eq` | `Moments.lean` |
+| Remark after Proposition 3.4 | `Kmom_le_pow`, `Kmom_le_two_pow` | `Moments.lean` |
 | Proposition 4.1 (chaos correlation) | `correlation_eq_zero_of_odd`, `correlation_bound_of_even` | `Correlation.lean` |
 | Corollary 4.2 (tail estimate) | `tail_estimate` | `LowerBound.lean` |
-| Lemma 5.1 (radial polynomial distance) | `radial_polynomial_distance` | `RadialPolynomial.lean`, `RadialRepresentation.lean`, `RadialMeasure.lean`, `RadialDistance.lean` |
+| Lemma 5.1 (general radial polynomial distance) | `radial_polynomial_distance`, `radial_polynomial_distance_nonneg` | `RadialPolynomial.lean`, `RadialRepresentation.lean`, `RadialMeasure.lean`, `RadialDistance.lean` |
 | Lemma 5.2 (local chi-square density) | `chi_square_local_density` (explicit constants `c₁ = exp (-2) / 8`, `d₀ = 16`) | `ChiSquare.lean` |
 | Lemma 5.3 (high-chaos energy) | `radialError_weighted_lower`, `energy_lower_bound` (explicit constants `c = cEnergy`, `d₀ = 16`) | `Oscillation.lean`, `EnergyBound.lean` |
 
@@ -48,22 +63,48 @@ Supporting claims used as notation or prose in the paper are also checked:
 one- and multivariate Hermite totality (`hermite_hasSum`, `chaos_hasSum_Pn`,
 `Pge_hasSum`), the ReLU profile estimate (`norm_reluProfile_le`), the concrete
 depth-2 network corollary (`depth_separation_lower_net2`), and the Gaussian tail
-bound (`gaussian_norm_tail`).
+bound `P(‖X‖ > R) ≤ 2^{d/2} e^{-R²/4}` (`gaussian_norm_tail`), the
+interpolant bound `|𝒩_sin| ≤ 1` (`abs_hinge_le`), and the identification of
+the normalized chi-square law with the law of `‖X‖²/d`
+(`chiSqMeasure_eq_map`).
 
-In Corollary 1.3, `cLower` and `cUpper` witness the paper's Ω and O bounds.
-Both are positive universal constants, independent of `d` and `ε`. The local
+Lemma 5.1 is formalized for every `F ∈ L²(γ^d)` with
+`F(x) = φ(‖x‖²/d)` almost everywhere, every measurable `φ`, every `d ≥ 1`,
+and every even `n₀ ≥ 2`. The conclusion is the exact equality between
+`‖P_{≥n₀}F‖²` and the infimum of the weighted polynomial errors.
+`radial_polynomial_distance` uses a profile on `ℝ`;
+`radial_polynomial_distance_nonneg` accepts a profile on `ℝ≥0`, exactly the
+paper's `[0, ∞)` domain, by a measurable extension. No continuity, boundedness,
+or sine-family restriction is imposed. The sine case is now the derived
+corollary `radialSine_polynomial_distance`, used in Lemma 5.3.
+
+In Corollary 1.2, the Lean hypotheses are: `d ≥ 2`; `n₀ ≥ 2` even;
+`F ∈ L²(γ^d)` with `F(x) = φ(‖x‖²/d)` for `γ^d`-a.e. `x`, where `φ` is
+measurable (needed for the integral to make sense); and
+`a² ≤ ⨅_{deg q < n₀/2} ∫_0^∞ (φ - q)² ρ_d` with `a > 0`. The conclusion is
+`r ≥ a/(4M√K_{n₀})`. The proof is exactly the paper's reduction: the
+hypothesis gives `‖P_{≥n₀}F‖ ≥ a` by applying the general Lemma 5.1 directly,
+and Theorem 1.1 applies.
+
+In Theorem 1.3(2) and Corollary 1.4, the width of a depth-3 network is
+`max(w₁, w₂)`, as defined in the paper, and parameters are bounded by
+`C(d + log(1/ε))` with no extra additive constant. In Corollary 1.4,
+`cLower` and `cUpper` witness the paper's Ω and O bounds, and `ε₀`, `A`, `d₁`
+are existential, exactly as in the statement; the proof uses `d₁ = 16`. The
 abbreviations are `L = d + log (1/ε)` and `B = A * L`, with the same `B` in
-the `Net2` and `Net3` parameter hypotheses. Lean bounds the maximum of the
-two depth-3 hidden widths, exactly as defined in the paper. The proof absorbs
-the upper theorem's extra `+1` using `L ≥ 1`; the corollary statement has no
-extra `+1`. The mathematical statement of the corollary is unchanged, and
-no proof is added to the manuscript after it.
+the `Net2` and `Net3` parameter hypotheses.
 
 ## Proof fidelity
 
 All formal proofs follow the paper's mathematical decomposition, with the
-analytic and measure-theoretic details made explicit.  Five local arguments
-use equivalent formalization-friendly variants:
+analytic and measure-theoretic details made explicit.  The proof of Theorem 1.3(2) follows the manuscript step by step: the grids
+`K = ⌈4dR²/η'⌉`, `K' = ⌈2κ(R²+2)/η''⌉` with `η' = η/(8π√d)`, `η'' = η/2`; the
+interpolation errors `4R²/K` and `2κ(R²+2)/K'`; the global bound
+`|𝒩_{R,η}| ≤ 1`; the parameter bound `2(R²+1) + 4π√d`; the radius
+`R² = 2d log 2 + 8 log(4/ε)`; the tail `P(‖X‖ > R) ≤ ε²/16`; and
+`‖F - 𝒩‖² ≤ η² + 4P(‖X‖ > R) ≤ ε²/2 ≤ ε²` with `η = ε/2`.
+Five local arguments elsewhere use equivalent formalization-friendly
+variants:
 
 1. Lemma 2.1 is proved in Lean from the three-term Hermite recurrence and
    finite multi-index reindexing, rather than by comparing coefficients in the
@@ -93,11 +134,10 @@ Gaussian radial law is changed to the normalized chi-square density, the
 density is bounded on its central window, and root counting supplies the
 sign-change lower bound.
 
-The upper-bound formalization follows the paper's interpolation-and-Gaussian-
-tail strategy.  `CenteredReLU.lean` centers the squaring interpolants to obtain
-the stated parameter scale.  Its constant hinge-interpolant term is represented
-by one constant second-layer unit, so `Net3` itself has exactly the paper's
-displayed architecture, with no separate affine output bias.
+The upper-bound formalization realizes the constant term of `𝒩_sin` by one
+constant second-layer unit, exactly as described in the manuscript, so `Net3`
+itself has the paper's displayed architecture, with no separate affine output
+bias.
 
 ## Organization and dead-code audit
 

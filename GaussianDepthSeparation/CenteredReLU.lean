@@ -1,8 +1,10 @@
 /-
-GaussianDepthSeparation — the centered depth-3 ReLU construction used in the global Gaussian
-upper bound.  Pairing the inputs `xᵢ` and `-xᵢ` lets the squaring interpolant
-start at zero.  Consequently the second-layer biases are `O(R²)`, rather than
-the spurious `O(d R²)` produced by an interpolant based at `-R`.
+GaussianDepthSeparation — the depth-3 ReLU construction in the proof of Theorem 1.3(ii) of
+`main.tex`.  `𝒩_sq(x) = ∑ᵢ (p(xᵢ) + p(-xᵢ))`, where `p` is the clipped-ramp
+interpolant of `t²` on the grid `tⱼ = jR/K`; `𝒩_sin` is the clipped-ramp
+interpolant of `s ↦ sin(κs)`, `κ = 4π√d`, on the grid `u_l = -1 + l(R²+2)/K'`;
+its constant term `sin(κu₀)` is carried by one second-layer unit with zero
+incoming weights and bias `1`, since the networks have no output bias.
 -/
 import GaussianDepthSeparation.ReLUHelpers
 import Mathlib.Analysis.Real.Pi.Bounds
@@ -345,192 +347,129 @@ theorem net3c_weights {d : ℕ} {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
           2 * (R ^ 2 + 1) + κ := by nlinarith [hg]
       split <;> simpa only [abs_neg, secondCell] using hbound
 
-/-- Choose positive interpolation grids meeting the squaring and sine error
-budgets, together with the upper bounds needed for the neuron count. -/
-private lemma exists_approximation_grids (d : ℕ) (R : ℝ) {ε κ : ℝ}
-    (hε : 0 < ε) (hκ : 0 < κ) :
-    ∃ M M' : ℕ, 0 < M ∧ 0 < M' ∧
-      (d : ℝ) * (2 * (2 * R) * gh 0 R M) ≤ 1 ∧
-      κ * ((d : ℝ) * (2 * (2 * R) * gh 0 R M)) ≤ ε / 2 ∧
-      2 * κ * gh (-1) (R ^ 2 + 1) M' ≤ ε / 2 ∧
-      (M : ℝ) ≤ 4 * (d : ℝ) * R ^ 2 + 8 * (d : ℝ) * R ^ 2 * κ / ε + 3 ∧
-      (M' : ℝ) ≤ 4 * κ * (R ^ 2 + 2) / ε + 2 := by
-  set M := ⌈4 * (d : ℝ) * R ^ 2⌉₊ +
-    ⌈8 * (d : ℝ) * R ^ 2 * κ / ε⌉₊ + 1 with hMdef
-  set M' := ⌈4 * κ * (R ^ 2 + 2) / ε⌉₊ + 1 with hM'def
-  have hM : 0 < M := by rw [hMdef]; omega
-  have hM' : 0 < M' := by rw [hM'def]; omega
-  have hMr : (0 : ℝ) < M := by exact_mod_cast hM
-  have hM'r : (0 : ℝ) < M' := by exact_mod_cast hM'
-  have hghR : gh 0 R M = R / M := by rw [gh]; ring
-  have hghS : gh (-1) (R ^ 2 + 1) M' = (R ^ 2 + 2) / M' := by
-    rw [gh]
-    ring
-  have hc1 : 4 * (d : ℝ) * R ^ 2 ≤ (⌈4 * (d : ℝ) * R ^ 2⌉₊ : ℝ) :=
-    Nat.le_ceil _
-  have hc2 : 8 * (d : ℝ) * R ^ 2 * κ / ε ≤
-      (⌈8 * (d : ℝ) * R ^ 2 * κ / ε⌉₊ : ℝ) := Nat.le_ceil _
-  have hc3 : 4 * κ * (R ^ 2 + 2) / ε ≤
-      (⌈4 * κ * (R ^ 2 + 2) / ε⌉₊ : ℝ) := Nat.le_ceil _
-  have hMc : (M : ℝ) = (⌈4 * (d : ℝ) * R ^ 2⌉₊ : ℝ) +
-      (⌈8 * (d : ℝ) * R ^ 2 * κ / ε⌉₊ : ℝ) + 1 := by
-    rw [hMdef]
-    push_cast
-    ring
-  have hM'c : (M' : ℝ) = (⌈4 * κ * (R ^ 2 + 2) / ε⌉₊ : ℝ) + 1 := by
-    rw [hM'def]
-    push_cast
-    ring
-  have hMlb1 : 4 * (d : ℝ) * R ^ 2 ≤ M := by
-    rw [hMc]
-    have hz : (0 : ℝ) ≤ (⌈8 * (d : ℝ) * R ^ 2 * κ / ε⌉₊ : ℝ) := by positivity
-    nlinarith [hc1]
-  have hMlb2 : 8 * (d : ℝ) * R ^ 2 * κ ≤ ε * M := by
-    have h := (div_le_iff₀ hε).mp hc2
-    rw [hMc]
-    nlinarith [hε]
-  have hM'lb : 4 * κ * (R ^ 2 + 2) ≤ ε * M' := by
-    have h := (div_le_iff₀ hε).mp hc3
-    rw [hM'c]
-    nlinarith [hε]
-  have heSq1 : (d : ℝ) * (2 * (2 * R) * gh 0 R M) ≤ 1 := by
-    rw [hghR, show (d : ℝ) * (2 * (2 * R) * (R / M)) =
-      4 * (d : ℝ) * R ^ 2 / M by ring, div_le_one hMr]
-    exact hMlb1
-  have heSq2 : κ * ((d : ℝ) * (2 * (2 * R) * gh 0 R M)) ≤ ε / 2 := by
-    rw [hghR, show κ * ((d : ℝ) * (2 * (2 * R) * (R / M))) =
-      4 * (d : ℝ) * R ^ 2 * κ / M by ring, div_le_iff₀ hMr]
-    nlinarith [hMlb2]
-  have hSin : 2 * κ * gh (-1) (R ^ 2 + 1) M' ≤ ε / 2 := by
-    rw [hghS, show 2 * κ * ((R ^ 2 + 2) / M') =
-      2 * κ * (R ^ 2 + 2) / M' by ring, div_le_iff₀ hM'r]
-    nlinarith [hM'lb]
-  have hMub : (M : ℝ) ≤ 4 * (d : ℝ) * R ^ 2 +
-      8 * (d : ℝ) * R ^ 2 * κ / ε + 3 := by
-    rw [hMc]
-    have h1 := (Nat.ceil_lt_add_one
-      (show 0 ≤ 4 * (d : ℝ) * R ^ 2 by positivity)).le
-    have h2 := (Nat.ceil_lt_add_one
-      (show 0 ≤ 8 * (d : ℝ) * R ^ 2 * κ / ε by positivity)).le
-    linarith
-  have hM'ub : (M' : ℝ) ≤ 4 * κ * (R ^ 2 + 2) / ε + 2 := by
-    rw [hM'c]
-    have h3 := (Nat.ceil_lt_add_one
-      (show 0 ≤ 4 * κ * (R ^ 2 + 2) / ε by positivity)).le
-    linarith
-  exact ⟨M, M', hM, hM', heSq1, heSq2, hSin, hMub, hM'ub⟩
-
-set_option maxHeartbeats 2000000 in
-/-- Convert grid-size estimates into the paper's total-width bound.
-All ceiling and asymptotic arithmetic is kept out of the network assembly. -/
-private lemma centered_width_bound {d : ℕ} (hd : 0 < d) {ε R : ℝ}
-    (hε : 0 < ε) {M M' : ℕ}
-    (hMub : (M : ℝ) ≤ 4 * (d : ℝ) * R ^ 2 +
-      8 * (d : ℝ) * R ^ 2 * (4 * π * Real.sqrt d) / ε + 3)
-    (hM'ub : (M' : ℝ) ≤ 4 * (4 * π * Real.sqrt d) * (R ^ 2 + 2) / ε + 2) :
-    (d : ℝ) * (2 * ((M : ℝ) * 2)) + (M' : ℝ) * 2 + 1 ≤
-      400 * π * ((d : ℝ) ^ 2 * Real.sqrt d) * (R ^ 2 + 2) * (1 / ε + 1) := by
-  have hd1 : (1 : ℝ) ≤ (d : ℝ) := by exact_mod_cast hd
-  have hR2 : 0 ≤ R ^ 2 := sq_nonneg R
-  have hπ : 0 < π := Real.pi_pos
+/-- The grids of the proof of Theorem 1.3(ii).  With `κ = 4π√d`, the paper's
+accuracies are `η' = η/(8π√d) = η/(2κ)` for the squaring network and
+`η'' = η/2` for the sine network, and the grid sizes are
+`K = ⌈4dR²/η'⌉` and `K' = ⌈2κ(R²+2)/η''⌉`. -/
+private lemma exists_approximation_grids {d : ℕ} (hd : 0 < d) {R η : ℝ}
+    (hR : 0 < R) (hη : 0 < η) (hη1 : η ≤ 1) :
+    ∃ K K' : ℕ, 0 < K ∧ 0 < K' ∧
+      (d : ℝ) * (2 * (2 * R) * gh 0 R K) ≤ 1 ∧
+      (4 * π * Real.sqrt d) * ((d : ℝ) * (2 * (2 * R) * gh 0 R K)) ≤ η / 2 ∧
+      2 * (4 * π * Real.sqrt d) * gh (-1) (R ^ 2 + 1) K' ≤ η / 2 ∧
+      (K : ℝ) ≤ 8 * (d : ℝ) * R ^ 2 * (4 * π * Real.sqrt d) / η + 1 ∧
+      (K' : ℝ) ≤ 4 * (4 * π * Real.sqrt d) * (R ^ 2 + 2) / η + 1 := by
+  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
+  have hsqrt1 : 1 ≤ Real.sqrt d := Real.one_le_sqrt.mpr hdR
   set κ := 4 * π * Real.sqrt d with hκdef
-  set A := (d : ℝ) ^ 2 * Real.sqrt d with hAdef
-  set B := A * (R ^ 2 + 2) with hBdef
-  have hsqrt1 : 1 ≤ Real.sqrt d := by
-    have hs := Real.sq_sqrt (show (0 : ℝ) ≤ d by positivity)
-    nlinarith [Real.sqrt_nonneg (d : ℝ)]
-  have hA1 : 1 ≤ A := by rw [hAdef]; nlinarith
-  have hd2A : (d : ℝ) ^ 2 ≤ A := by rw [hAdef]; nlinarith
-  have hdA : (d : ℝ) ≤ A := by nlinarith [hd1, hd2A]
-  have hsqrtd : Real.sqrt d ≤ (d : ℝ) := by
-    have hs := Real.sq_sqrt (show (0 : ℝ) ≤ d by positivity)
-    nlinarith [Real.sqrt_nonneg (d : ℝ), hd1]
-  have hsqrtA : Real.sqrt d ≤ A := hsqrtd.trans hdA
-  have hfac : 1 ≤ R ^ 2 + 2 := by nlinarith
-  have hB0 : 0 ≤ B := by rw [hBdef]; positivity
-  have hd2R : (d : ℝ) ^ 2 * R ^ 2 ≤ B := by
-    rw [hBdef]
-    calc
-      (d : ℝ) ^ 2 * R ^ 2 ≤ A * R ^ 2 :=
-        mul_le_mul_of_nonneg_right hd2A hR2
-      _ ≤ A * (R ^ 2 + 2) :=
-        mul_le_mul_of_nonneg_left (by linarith) (by linarith [hA1])
-  have hdB : (d : ℝ) ≤ B := by rw [hBdef]; nlinarith
-  have honeB : 1 ≤ B := by rw [hBdef]; nlinarith
-  have hsqrtB : Real.sqrt d * (R ^ 2 + 2) ≤ B := by
-    rw [hBdef]
-    exact mul_le_mul_of_nonneg_right hsqrtA (by positivity)
-  have hconst : 16 * (d : ℝ) ^ 2 * R ^ 2 + 12 * (d : ℝ) + 5 ≤
-      40 * B := by nlinarith [hd2R, hdB, honeB]
-  have hnumer : 32 * (d : ℝ) ^ 2 * R ^ 2 * κ +
-      8 * κ * (R ^ 2 + 2) ≤ 160 * π * B := by
-    rw [hκdef]
-    have hfirst : (d : ℝ) ^ 2 * R ^ 2 * Real.sqrt d ≤ B := by
-      rw [hBdef, hAdef]
-      nlinarith [hR2]
-    nlinarith [hfirst, hsqrtB, hπ]
-  have hwidth : (d : ℝ) * (2 * ((M : ℝ) * 2)) + (M' : ℝ) * 2 + 1 ≤
-      (16 * (d : ℝ) ^ 2 * R ^ 2 + 12 * (d : ℝ) + 5) +
-      (32 * (d : ℝ) ^ 2 * R ^ 2 * κ + 8 * κ * (R ^ 2 + 2)) / ε := by
-    have h1 := mul_le_mul_of_nonneg_left hMub
-      (show 0 ≤ 4 * (d : ℝ) by positivity)
-    have h2 := mul_le_mul_of_nonneg_left hM'ub (by norm_num : (0 : ℝ) ≤ 2)
-    calc
-      (d : ℝ) * (2 * ((M : ℝ) * 2)) + (M' : ℝ) * 2 + 1
-          = 4 * (d : ℝ) * M + 2 * M' + 1 := by ring
-      _ ≤ 4 * (d : ℝ) *
-            (4 * (d : ℝ) * R ^ 2 + 8 * (d : ℝ) * R ^ 2 * κ / ε + 3) +
-          2 * (4 * κ * (R ^ 2 + 2) / ε + 2) + 1 := by linarith
-      _ = _ := by rw [add_div]; ring
-  calc
-    (d : ℝ) * (2 * ((M : ℝ) * 2)) + (M' : ℝ) * 2 + 1
-        ≤ _ := hwidth
-    _ ≤ 400 * π * B + 400 * π * B / ε := by
-      have hc : 40 * B ≤ 400 * π * B := by nlinarith [hB0, Real.pi_gt_three]
-      have hn0 : (32 * (d : ℝ) ^ 2 * R ^ 2 * κ +
-          8 * κ * (R ^ 2 + 2)) / ε ≤ 160 * π * B / ε :=
-        div_le_div_of_nonneg_right hnumer hε.le
-      have hn : 160 * π * B / ε ≤ 400 * π * B / ε := by
-        exact div_le_div_of_nonneg_right (by nlinarith [hπ, hB0]) hε.le
-      linarith [hconst]
-    _ = 400 * π * ((d : ℝ) ^ 2 * Real.sqrt d) * (R ^ 2 + 2) *
-        (1 / ε + 1) := by rw [hBdef, hAdef]; ring
+  have hκ1 : 1 ≤ κ := by rw [hκdef]; nlinarith [Real.pi_gt_three]
+  have hκ : 0 < κ := by linarith
+  set η' := η / (2 * κ) with hη'def
+  have hη' : 0 < η' := by positivity
+  have hη'1 : η' ≤ 1 := by
+    rw [hη'def, div_le_one (by positivity)]
+    linarith
+  have hx : 0 < 4 * (d : ℝ) * R ^ 2 / η' := by positivity
+  have hx' : 0 < 2 * κ * (R ^ 2 + 2) / (η / 2) := by positivity
+  set K := ⌈4 * (d : ℝ) * R ^ 2 / η'⌉₊ with hKdef
+  set K' := ⌈2 * κ * (R ^ 2 + 2) / (η / 2)⌉₊ with hK'def
+  have hK : 0 < K := Nat.ceil_pos.mpr hx
+  have hK' : 0 < K' := Nat.ceil_pos.mpr hx'
+  have hKr : (0 : ℝ) < K := by exact_mod_cast hK
+  have hK'r : (0 : ℝ) < K' := by exact_mod_cast hK'
+  have hKge : 4 * (d : ℝ) * R ^ 2 ≤ K * η' := (div_le_iff₀ hη').mp (Nat.le_ceil _)
+  have hK'ge : 2 * κ * (R ^ 2 + 2) ≤ K' * (η / 2) :=
+    (div_le_iff₀ (by positivity)).mp (Nat.le_ceil _)
+  have hghR : gh 0 R K = R / K := by rw [gh]; ring
+  have hghS : gh (-1) (R ^ 2 + 1) K' = (R ^ 2 + 2) / K' := by rw [gh]; ring
+  -- the squaring error `4dR²/K` is at most `η'`
+  have herr : (d : ℝ) * (2 * (2 * R) * gh 0 R K) ≤ η' := by
+    rw [hghR, show (d : ℝ) * (2 * (2 * R) * (R / K)) = 4 * (d : ℝ) * R ^ 2 / K by ring,
+      div_le_iff₀ hKr]
+    nlinarith
+  refine ⟨K, K', hK, hK', herr.trans hη'1, ?_, ?_, ?_, ?_⟩
+  · calc κ * ((d : ℝ) * (2 * (2 * R) * gh 0 R K)) ≤ κ * η' :=
+          mul_le_mul_of_nonneg_left herr hκ.le
+      _ = η / 2 := by rw [hη'def]; field_simp
+  · rw [hghS, show 2 * κ * ((R ^ 2 + 2) / K') = 2 * κ * (R ^ 2 + 2) / K' by ring,
+      div_le_iff₀ hK'r]
+    nlinarith
+  · calc (K : ℝ) ≤ 4 * (d : ℝ) * R ^ 2 / η' + 1 := (Nat.ceil_lt_add_one hx.le).le
+      _ = 8 * (d : ℝ) * R ^ 2 * κ / η + 1 := by rw [hη'def]; field_simp; ring
+  · calc (K' : ℝ) ≤ 2 * κ * (R ^ 2 + 2) / (η / 2) + 1 := (Nat.ceil_lt_add_one hx'.le).le
+      _ = 4 * κ * (R ^ 2 + 2) / η + 1 := by field_simp; ring
 
-/-- Quantitative local approximation with the width and parameter exponents
-used in the paper.  The final conjunct supplies the global bound needed to
-integrate the local estimate against the Gaussian measure. -/
-theorem exists_net3c_approx {d : ℕ} (hd : 0 < d) {ε R : ℝ}
-    (hε : 0 < ε) (hR : 0 < R) :
+/-- Convert the grid sizes into the width bound `O(d^{5/2}(R²+1)/η)` of the
+proof of Theorem 1.3(ii): the first hidden layer has `4dK` units and the
+second `2K'+1`. -/
+private lemma centered_width_bound {d : ℕ} (hd : 0 < d) {η R : ℝ}
+    (hη : 0 < η) (hη1 : η ≤ 1) {K K' : ℕ}
+    (hKub : (K : ℝ) ≤ 8 * (d : ℝ) * R ^ 2 * (4 * π * Real.sqrt d) / η + 1)
+    (hK'ub : (K' : ℝ) ≤ 4 * (4 * π * Real.sqrt d) * (R ^ 2 + 2) / η + 1) :
+    (d : ℝ) * (2 * ((K : ℝ) * 2)) + ((K' : ℝ) * 2 + 1) ≤
+      200 * π * ((d : ℝ) ^ 2 * Real.sqrt d) * (R ^ 2 + 1) / η := by
+  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
+  have hπ := Real.pi_gt_three
+  have hR2 : 0 ≤ R ^ 2 := sq_nonneg R
+  set s := Real.sqrt d with hs
+  have hs0 : 0 ≤ s := Real.sqrt_nonneg _
+  have hs2 : s ^ 2 = d := Real.sq_sqrt (by positivity)
+  have hs1 : 1 ≤ s := Real.one_le_sqrt.mpr hd1
+  set A := (d : ℝ) ^ 2 * s with hA
+  have hdA : (d : ℝ) ≤ A := by rw [hA]; nlinarith
+  have hsA : s ≤ A := by rw [hA]; nlinarith
+  have hKη : (K : ℝ) * η ≤ 32 * π * (d : ℝ) * R ^ 2 * s + η := by
+    have h := mul_le_mul_of_nonneg_right hKub hη.le
+    rw [add_mul, div_mul_cancel₀ _ hη.ne', one_mul] at h
+    linarith
+  have hK'η : (K' : ℝ) * η ≤ 16 * π * s * (R ^ 2 + 2) + η := by
+    have h := mul_le_mul_of_nonneg_right hK'ub hη.le
+    rw [add_mul, div_mul_cancel₀ _ hη.ne', one_mul] at h
+    linarith
+  rw [le_div_iff₀ hη]
+  have h1 : π * s * R ^ 2 ≤ π * A * R ^ 2 := by gcongr
+  have h2 : π * s ≤ π * A := by gcongr
+  have h3 : A ≤ π * A := by nlinarith
+  have h4 : 0 ≤ π * A * R ^ 2 := by positivity
+  calc ((d : ℝ) * (2 * ((K : ℝ) * 2)) + ((K' : ℝ) * 2 + 1)) * η
+      = 4 * d * (K * η) + 2 * (K' * η) + η := by ring
+    _ ≤ 4 * d * (32 * π * (d : ℝ) * R ^ 2 * s + η) +
+          2 * (16 * π * s * (R ^ 2 + 2) + η) + η := by gcongr
+    _ ≤ 4 * d * (32 * π * (d : ℝ) * R ^ 2 * s + 1) +
+          2 * (16 * π * s * (R ^ 2 + 2) + 1) + 1 := by gcongr
+    _ = 128 * (π * A * R ^ 2) + 32 * (π * s * R ^ 2) + 64 * (π * s) + 4 * d + 3 := by
+          rw [hA]; ring
+    _ ≤ 200 * π * A * (R ^ 2 + 1) := by nlinarith
+
+/-- **Local depth-3 approximation of the proof of Theorem 1.3(ii).**  For every
+`R > 0` and `0 < η ≤ 1` the network `𝒩_{R,η} = 𝒩_sin ∘ 𝒩_sq` satisfies
+`sup_{‖x‖≤R} |F(x) - 𝒩_{R,η}(x)| ≤ η`, has width `O(d^{5/2}(R²+1)/η)`,
+parameters bounded by `2(R²+1) + 4π√d`, and `|𝒩_{R,η}| ≤ 1` everywhere. -/
+theorem exists_net3c_approx {d : ℕ} (hd : 0 < d) {η R : ℝ}
+    (hη : 0 < η) (hη1 : η ≤ 1) (hR : 0 < R) :
     ∃ N : Net3 d,
       ((N.n1 : ℝ) + N.n2 ≤
-        400 * π * ((d : ℝ) ^ 2 * Real.sqrt d) * (R ^ 2 + 2) *
-          (1 / ε + 1)) ∧
-      N.WeightsLe (20 * π * (Real.sqrt d + R ^ 2 + 1)) ∧
+        200 * π * ((d : ℝ) ^ 2 * Real.sqrt d) * (R ^ 2 + 1) / η) ∧
+      N.WeightsLe (2 * (R ^ 2 + 1) + 4 * π * Real.sqrt d) ∧
       (∀ x : Vec d, ‖x‖ ≤ R →
-        |N.eval x - Real.sin (4 * π * Real.sqrt d * ‖x‖ ^ 2)| ≤ ε) ∧
-      ∀ x : Vec d, |N.eval x| ≤ 1 + ε / 2 := by
-  have hR2 : 0 ≤ R ^ 2 := sq_nonneg R
-  set κ := 4 * π * Real.sqrt d with hκdef
-  have hκ : 0 < κ := by rw [hκdef]; positivity
-  obtain ⟨M, M', hM, hM', heSq1, heSq2, hSin, hMub, hM'ub⟩ :=
-    exists_approximation_grids d R hε hκ
-  refine ⟨net3c d R M (-1) (R ^ 2 + 1) M'
-    (fun s => Real.sin (κ * s)), ?_, ?_, ?_, ?_⟩
-  · show ((d * (2 * (M * 2)) : ℕ) : ℝ) + ((M' * 2 + 1 : ℕ) : ℝ) ≤ _
+        |N.eval x - Real.sin (4 * π * Real.sqrt d * ‖x‖ ^ 2)| ≤ η) ∧
+      ∀ x : Vec d, |N.eval x| ≤ 1 := by
+  have hκ : 0 < 4 * π * Real.sqrt d := by positivity
+  obtain ⟨K, K', hK, hK', heSq1, heSq2, hSin, hKub, hK'ub⟩ :=
+    exists_approximation_grids hd hR hη hη1
+  refine ⟨net3c d R K (-1) (R ^ 2 + 1) K'
+    (fun s => Real.sin (4 * π * Real.sqrt d * s)), ?_, ?_, ?_, ?_⟩
+  · show ((d * (2 * (K * 2)) : ℕ) : ℝ) + ((K' * 2 + 1 : ℕ) : ℝ) ≤ _
     push_cast
-    conv_lhs => rw [← add_assoc]
-    exact centered_width_bound hd hε hMub hM'ub
-  · refine (net3c_weights hR hM hM' hκ.le).mono ?_
-    rw [hκdef]
-    nlinarith [Real.pi_gt_three, Real.sqrt_nonneg (d : ℝ), hR2]
+    linarith [centered_width_bound hd hη hη1 hKub hK'ub]
+  · exact net3c_weights hR hK hK' hκ.le
   · intro x hx
-    simpa [κ, hκdef] using net3c_error hR hM hM' heSq1 heSq2 hSin hx
+    exact net3c_error hR hK hK' heSq1 heSq2 hSin hx
   · intro x
     rw [net3c_eval]
-    exact abs_hinge_le_add (a := -1) (b := R ^ 2 + 1) (N := M')
-      (fun s => Real.sin (κ * s)) κ 1 (ε / 2) (by nlinarith [hR]) hM'
-      (by positivity) (sinκ_lipschitz hκ.le (-1) (R ^ 2 + 1))
-      (fun t _ => Real.abs_sin_le_one _) hSin _
+    exact abs_hinge_le (a := -1) (b := R ^ 2 + 1) (N := K')
+      (fun s => Real.sin (4 * π * Real.sqrt d * s)) 1 (by nlinarith [sq_nonneg R]) hK'
+      (fun t _ => Real.abs_sin_le_one _) _
 
 end
 

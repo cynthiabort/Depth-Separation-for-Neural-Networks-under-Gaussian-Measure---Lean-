@@ -10,6 +10,8 @@ Run with:
 import GaussianDepthSeparation
 
 #print axioms GaussianDepthSeparation.ridge_lower_bound
+#print axioms GaussianDepthSeparation.polynomial_criterion
+#print axioms GaussianDepthSeparation.depth_separation
 #print axioms GaussianDepthSeparation.depth_separation_lower
 #print axioms GaussianDepthSeparation.depth_separation_upper_L2
 #print axioms GaussianDepthSeparation.depth_separation_comparison
@@ -27,6 +29,8 @@ import GaussianDepthSeparation
 #print axioms GaussianDepthSeparation.correlation_bound_of_even
 #print axioms GaussianDepthSeparation.tail_estimate
 #print axioms GaussianDepthSeparation.radial_polynomial_distance
+#print axioms GaussianDepthSeparation.radial_polynomial_distance_nonneg
+#print axioms GaussianDepthSeparation.radialSine_polynomial_distance
 #print axioms GaussianDepthSeparation.chi_square_local_density
 #print axioms GaussianDepthSeparation.radialError_weighted_lower
 #print axioms GaussianDepthSeparation.energy_lower_bound

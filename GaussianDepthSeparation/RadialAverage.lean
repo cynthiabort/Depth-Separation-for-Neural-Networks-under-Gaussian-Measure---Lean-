@@ -264,7 +264,7 @@ lemma integrable_act {d : ℕ} (f : L2 d) :
   refine HasFiniteIntegral.of_bounded (C := ‖f‖) (ae_of_all _ fun U => ?_)
   rw [act_norm]
 
-/- LaTeX — `paper.tex` §3: "Define
+/- LaTeX — `main.tex` §3: "Define
 $$\Pi_{\mathrm{Rad}}f(x) = \int_{O(d)} f(Ux)\,dU,$$
 where $dU$ is Haar probability measure on $O(d)$."
 -/
@@ -328,9 +328,8 @@ lemma inner_radAvgFun {d : ℕ} (f g : L2 d) :
     rw [radAvgFun, ← integral_inner (integrable_act g) f]
   rw [h1, integral_congr_ae (ae_of_all _ h2), h3, h4]
 
-/- LaTeX — `paper.tex` §3 (Radial averaging): "Then $\Pi_{\mathrm{Rad}}$ is
-the orthogonal projection from $L^2(\gamma^d)$ onto the closed subspace of radial
-functions." -/
+/- LaTeX — `main.tex` §3: "Note that $\Pi_{\mathrm{Rad}}$ is the orthogonal
+projection of $L^2(\gamma^d)$ onto the subspace of radial functions." -/
 /-- Radial averaging is the orthogonal projection onto radial functions. -/
 theorem radAvg_eq_starProjection (d : ℕ) (f : L2 d) :
     radAvgFun f = (radialSub d).starProjection f := by
@@ -342,7 +341,7 @@ theorem radAvg_eq_starProjection (d : ℕ) (f : L2 d) :
     rw [inner_radAvgFun, radAvgFun_of_isRadial hw]
   rw [h1, sub_self]
 
-/- LaTeX — `paper.tex`, Proposition 3.1: "Moreover,
+/- LaTeX — `main.tex`, Proposition 3.1: "For every $n\in\mathbb N$, it holds that
 $$P_n\Pi_{\mathrm{Rad}} = \Pi_{\mathrm{Rad}}P_n.$$" -/
 /-- **Proposition 3.1** (via Lemma 2.2). -/
 theorem radAvg_comm_Pn (d n : ℕ) (f : L2 d) :

@@ -312,7 +312,7 @@ lemma inner_mul_ridge_sum {d : ℕ} (n : ℕ) (v x : Vec d) (hv : ‖v‖ = 1) :
     push_cast
     ring
 
-/- LaTeX — `paper.tex`, Lemma 2.1 (Hermite ridge identity):
+/- LaTeX — `main.tex`, Lemma 2.1 (Hermite ridge identity):
 "For every $n \in \mathbb{N}$, $v \in S^{d-1}$, and $x \in \mathbb{R}^d$,
 $$h_n(\langle v, x\rangle) = \sum_{|\alpha|=n}\frac{n!}{\alpha!}v^\alpha H_\alpha(x).$$"
 -/

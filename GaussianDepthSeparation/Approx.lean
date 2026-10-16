@@ -4,7 +4,7 @@ GaussianDepthSeparation — one-dimensional ReLU (hinge) approximation of Lipsch
 `hinge` builds the piecewise-linear interpolant of `φ` on a uniform grid of `N`
 cells over `[a,b]`, written as a sum of ReLU "ramps".  `hinge_approx` bounds the
 sup error by `2·L·h` (`h = (b−a)/N`) for `L`-Lipschitz `φ`.  This is the analytic
-core of the depth-3 upper bound (Theorem 1.2(ii)).
+core of the depth-3 upper bound (Theorem 1.3(ii)).
 -/
 import GaussianDepthSeparation.ReLU
 import Mathlib.Tactic.FieldSimp
@@ -305,6 +305,44 @@ theorem abs_hinge_le_add (φ : ℝ → ℝ) (L C δ : ℝ) (hab : a < b) (hN : 0
     _ ≤ |hinge a b N φ x - φ x| + |φ x| := abs_add_le _ _
     _ ≤ δ + C := add_le_add (happ.trans herr) (hφ x hx)
     _ = C + δ := by ring
+
+/-- The hinge interpolant is bounded by any bound of `φ` on the grid interval:
+on each cell its value is a convex combination of two values of `φ`, and it is
+constant outside `[a,b]`. -/
+theorem abs_hinge_le (φ : ℝ → ℝ) (C : ℝ) (hab : a < b) (hN : 0 < N)
+    (hφ : ∀ t ∈ Set.Icc a b, |φ t| ≤ C) (x : ℝ) :
+    |hinge a b N φ x| ≤ C := by
+  by_cases hxa : x < a
+  · rw [hinge_eq_of_le φ hab hN hxa.le]
+    exact hφ a ⟨le_rfl, hab.le⟩
+  by_cases hxb : b < x
+  · rw [hinge_eq_of_ge φ hab hN hxb.le]
+    exact hφ b ⟨hab.le, le_rfl⟩
+  have hx : x ∈ Set.Icc a b := ⟨le_of_not_gt hxa, le_of_not_gt hxb⟩
+  obtain ⟨k, hkN, hxl, hxr⟩ := exists_cell hab hN hx
+  rw [hinge_eq_on_cell φ hab hN hkN hxl hxr]
+  have hghpos := gh_pos hab hN
+  set θ := (x - gpt a b N k) / gh a b N with hθ
+  have hθ0 : 0 ≤ θ := div_nonneg (by linarith) hghpos.le
+  have hθ1 : θ ≤ 1 := by
+    rw [hθ, div_le_one hghpos]
+    have := gpt_succ (a := a) (b := b) (N := N) k
+    linarith
+  have hval : φ (gpt a b N k) + gslope a b N φ k * (x - gpt a b N k)
+      = (1 - θ) * φ (gpt a b N k) + θ * φ (gpt a b N (k + 1)) := by
+    rw [hθ, gslope]
+    ring
+  have h1 := hφ _ (gpt_mem hab hN hkN.le)
+  have h2 := hφ _ (gpt_mem hab hN (Nat.succ_le_of_lt hkN))
+  rw [hval]
+  calc |(1 - θ) * φ (gpt a b N k) + θ * φ (gpt a b N (k + 1))|
+      ≤ |(1 - θ) * φ (gpt a b N k)| + |θ * φ (gpt a b N (k + 1))| :=
+        abs_add_le _ _
+    _ = (1 - θ) * |φ (gpt a b N k)| + θ * |φ (gpt a b N (k + 1))| := by
+        rw [abs_mul, abs_mul, abs_of_nonneg (by linarith), abs_of_nonneg hθ0]
+    _ ≤ (1 - θ) * C + θ * C := by
+        gcongr
+    _ = C := by ring
 
 end Hinge
 

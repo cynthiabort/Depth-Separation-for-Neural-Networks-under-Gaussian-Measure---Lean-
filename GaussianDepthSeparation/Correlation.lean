@@ -54,7 +54,7 @@ lemma Pn_of_mem_ne {d : ℕ} {k n : ℕ} (hkn : k ≠ n) {f : L2 d}
   rw [real_inner_comm]
   exact hOrtho w hw
 
-/-- `P_n(g^v) = (⟨g,h_n⟩/n!)·h_n^v` (LaTeX — `paper.tex` §4: "Write
+/-- `P_n(g^v) = (⟨g,h_n⟩/n!)·h_n^v` (LaTeX — `main.tex` §4: "Write
 $P_n(g^v) = \frac{\langle g, h_n\rangle}{n!}h_n(\langle v,x\rangle)$"). -/
 theorem Pn_ridge {d : ℕ} (n : ℕ) (v : Vec d) (hv : ‖v‖ = 1) (g : L2R) :
     Pn d n (ridge v hv g)
@@ -224,7 +224,7 @@ lemma integral_inner_pow_sphere {d : ℕ} {v : Vec d} (hv : ‖v‖ = 1) (n : �
     integral_map (Measurable.aemeasurable (by fun_prop))
       (Continuous.aestronglyMeasurable (continuous_mpow _))]
 
-/-- `‖ρ_n‖² = n!·K_n` for even `n` (LaTeX — `paper.tex` §4:
+/-- `‖ρ_n‖² = n!·K_n` for even `n` (LaTeX — `main.tex` §4:
 "$\|\Pi_{\mathrm{Rad}}P_n(g^v)\|^2 = c_n^2 n! K_n$", normalized form). -/
 lemma norm_rho_sq {d : ℕ} (hd : 0 < d) (n : ℕ) :
     ‖rho d n‖ ^ 2 = (n ! : ℝ) * Kmom d n := by
@@ -248,7 +248,7 @@ lemma norm_rho_sq {d : ℕ} (hd : 0 < d) (n : ℕ) :
 
 /-! ### Proposition 4.1 -/
 
-/- LaTeX — `paper.tex`, Proposition 4.1: "the inner product
+/- LaTeX — `main.tex`, Proposition 4.1: "the inner product
 $\langle P_n F, P_n(g^v)\rangle$ vanishes when $n$ is odd." -/
 /-- **Proposition 4.1, odd case.** -/
 theorem correlation_eq_zero_of_odd {d : ℕ} {n : ℕ} (hn : Odd n)
@@ -258,7 +258,7 @@ theorem correlation_eq_zero_of_odd {d : ℕ} {n : ℕ} (hn : Odd n)
     inner_radial_ridgeHermite (isRadial_Pn hF n) n v hv,
     rho_eq_zero_of_odd hn, inner_zero_right, mul_zero]
 
-/- LaTeX — `paper.tex`, Proposition 4.1: "When $n$ is even,
+/- LaTeX — `main.tex`, Proposition 4.1: "When $n$ is even,
 $$\left|\langle P_n F, P_n(g^v)\rangle\right| \le \sqrt{K_n}\,
 \|P_n F\|\,\|P_n(g^v)\|.$$" -/
 /-- **Proposition 4.1, even case.** -/

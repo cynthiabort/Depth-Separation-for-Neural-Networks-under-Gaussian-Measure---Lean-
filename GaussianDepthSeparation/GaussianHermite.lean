@@ -23,7 +23,7 @@ noncomputable section
 
 /-! ## Multi-index vocabulary
 
-LaTeX — `paper.tex` §2: "For $\alpha = (\alpha_1, \ldots, \alpha_d) \in
+LaTeX — `main.tex` §2: "For $\alpha = (\alpha_1, \ldots, \alpha_d) \in
 \mathbb{N}^d$, set $H_\alpha(x) = \prod_{i=1}^d h_{\alpha_i}(x_i)$,
 $\alpha! = \prod_{i=1}^d \alpha_i!$, $|\alpha| = \sum_{i=1}^d \alpha_i$."
 -/
@@ -63,7 +63,7 @@ lemma mfact_ne_zero {d : ℕ} (α : MIdx d) : (mfact α : ℝ) ≠ 0 :=
 
 /-! ## Hermite functions
 
-LaTeX — `paper.tex` §2: "We use the probabilists' Hermite polynomials,
+LaTeX — `main.tex` §2: "We use the probabilists' Hermite polynomials,
 normalized by $\langle h_m, h_n\rangle_{L^2(\gamma)} = m!\,\delta_{mn}$."
 Grounded in `Polynomial.hermite` (which satisfies
 `hermite (n+1) = X * hermite n - derivative (hermite n)`).
@@ -266,7 +266,7 @@ theorem integral_hR_succ_mul (n : ℕ) (Q : Polynomial ℝ) :
     integral_add (integrable_polyEval_gaussian _) (integrable_polyEval_gaussian _)]
   ring
 
-/-- LaTeX — `paper.tex` §2: "$\langle h_m, h_n\rangle_{L^2(\gamma)} = m!\,\delta_{mn}$"
+/-- LaTeX — `main.tex` §2: "$\langle h_m, h_n\rangle_{L^2(\gamma)} = m!\,\delta_{mn}$"
 (as an integral identity). -/
 theorem integral_hfun_mul_hfun (m n : ℕ) :
     ∫ t, hfun m t * hfun n t ∂γ₁ = if m = n then (m ! : ℝ) else 0 := by
@@ -393,7 +393,7 @@ def hermiteL2 (n : ℕ) : L2R := (memLp_hfun n).toLp
 /-- `H_α` as an element of `L²(γ^d)`. -/
 def HL2 {d : ℕ} (α : MIdx d) : L2 d := (memLp_Hfun α).toLp
 
-/-- LaTeX — `paper.tex` §2:
+/-- LaTeX — `main.tex` §2:
 "$\langle h_m, h_n\rangle_{L^2(\gamma)} = m!\,\delta_{mn}$." -/
 theorem hermiteL2_inner (m n : ℕ) :
     ⟪hermiteL2 m, hermiteL2 n⟫ = if m = n then (m ! : ℝ) else 0 := by
@@ -418,7 +418,7 @@ theorem integral_Hfun_mul_Hfun {d : ℕ} (α β : MIdx d) :
   exact MeasureTheory.integral_fintype_prod_eq_prod
     (f := fun i (t : ℝ) => hfun (α i) t * hfun (β i) t)
 
-/-- LaTeX — `paper.tex` §2:
+/-- LaTeX — `main.tex` §2:
 "$\langle H_\alpha, H_\beta\rangle_{L^2(\gamma^d)} = \alpha!\,\delta_{\alpha\beta}$." -/
 theorem HL2_inner {d : ℕ} (α β : MIdx d) :
     ⟪HL2 α, HL2 β⟫ = if α = β then (mfact α : ℝ) else 0 := by

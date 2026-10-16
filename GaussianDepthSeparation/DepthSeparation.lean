@@ -1,5 +1,5 @@
 /-
-GaussianDepthSeparation — Theorem 1.2(i), the depth-2 lower bound.
+GaussianDepthSeparation — Theorem 1.3(i), the depth-2 lower bound.
 -/
 import GaussianDepthSeparation.EnergyBound
 
@@ -10,16 +10,17 @@ open scoped RealInnerProductSpace
 
 noncomputable section
 
-/- LaTeX — `paper.tex`, Theorem 1.2(i) (Depth separation, lower bound):
-"Let $d \ge d_0$ be even, set $n_0 = d$ and $m = 4d^{3/2}$, and define
-$F(x) = \sin(4\pi d^{1/2}\|x\|^2)$.  For any $g_1,\ldots,g_r \in L^2(\gamma)$
-with $\|g_j\| \le M$ and any $v_1,\ldots,v_r \in S^{d-1}$, if
-$\|F - \sum_j g_j(\langle v_j,\cdot\rangle)\|^2 \le c^2/2$, then
-$$r \ge \frac{c}{4M\sqrt{K_d}} = 2^{\Omega(d)}.$$"
-The informal `2^{Ω(d)}` is concretized via `√K_d ≤ 2^{−d/4}`:
-`r ≥ cEnergy·2^{d/4}/(4M)`.
+/- LaTeX — `main.tex`, Theorem 1.3(1): "Let $F(x)=\sin(4\pi d^{1/2}\|x\|^2)$.
+Then, there are universal constants $c>0$ and $d_0$ such that for every even
+$d\ge d_0$ the following holds: Let $M>0$. For all
+$g_1,\ldots,g_r\in L^2(\gamma)$ with $\|g_j\|_{L^2(\gamma)}\le M$ and all
+$v_1,\ldots,v_r\in S^{d-1}$, if
+$\|F-\sum_{j=1}^r g_j(\langle v_j,\cdot\rangle)\|_{L^2(\gamma^d)}^2\le c^2/2$, then
+$r\ge\frac{c}{4M}\,2^{d/4}$."
+Here the constants are explicit: `c = cEnergy` and `d₀ = 16`.  The statement
+with existential constants, together with part (2), is `depth_separation`.
 -/
-/-- **Theorem 1.2(i) (Depth separation, lower bound).** -/
+/-- **Theorem 1.3(i) (Depth separation, lower bound).** -/
 theorem depth_separation_lower (d : ℕ) (hde : Even d) (hd : 16 ≤ d)
     {r : ℕ} (g : Fin r → L2R) (v : Fin r → Vec d) (hv : ∀ j, ‖v j‖ = 1)
     {M : ℝ} (hM : 0 < M) (hgM : ∀ j, ‖g j‖ ≤ M)

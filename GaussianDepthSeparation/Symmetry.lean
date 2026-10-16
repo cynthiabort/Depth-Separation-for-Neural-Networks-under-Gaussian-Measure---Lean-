@@ -42,7 +42,7 @@ theorem measurePreserving_actMap {d : ℕ} (U : Od d) :
 def act {d : ℕ} (U : Od d) : L2 d →ₗᵢ[ℝ] L2 d :=
   Lp.compMeasurePreservingₗᵢ (𝕜 := ℝ) (actMap U) (measurePreserving_actMap U)
 
-/-- LaTeX — `paper.tex` §2 (inside proof of Lemma 2.2): "The map $T_U f = f\circ U$ is
+/-- LaTeX — `main.tex` §2 (inside proof of Lemma 2.2): "The map $T_U f = f\circ U$ is
 unitary on $L^2(\gamma^d)$". Norm preservation is definitional for `act`. -/
 @[simp] lemma act_norm {d : ℕ} (U : Od d) (f : L2 d) : ‖act U f‖ = ‖f‖ :=
   (act U).norm_map f
@@ -72,7 +72,7 @@ instance (d : ℕ) : CompleteSpace (radialSub d) :=
 
 /-! ## Ridge functions
 
-LaTeX — `paper.tex` §3: "For $g \in L^2(\gamma)$ and $v \in S^{d-1}$, define
+LaTeX — `main.tex` §3: "For $g \in L^2(\gamma)$ and $v \in S^{d-1}$, define
 $g^v(x) = g(\langle v, x\rangle)$.  If $X \sim \gamma^d$, then
 $\langle v, X\rangle \sim \gamma$, so $\|g^v\|_{L^2(\gamma^d)} = \|g\|_{L^2(\gamma)}$."
 -/

@@ -233,10 +233,11 @@ def radAvgCLM (d : ℕ) : L2 d →L[ℝ] L2 d :=
       map_smul' := radAvgFun_smul }
     1 (fun f => by simpa using radAvgFun_norm_le f)
 
-/- LaTeX — `paper.tex`, Proposition 3.2 (Hermite expansion after radial averaging):
-"Let $V \sim \mathrm{Unif}(S^{d-1})$.  In $L^2(\gamma^d)$,
-$$\Pi_{\mathrm{Rad}}(g^v)(x) = \sum_{n=0}^\infty\sum_{|\alpha|=n}
-\frac{\langle g, h_n\rangle_{L^2(\gamma)}}{\alpha!}\mathbb{E}[V^\alpha]\,H_\alpha(x).$$"
+/- LaTeX — `main.tex`, Proposition 3.2 (Hermite expansion after radial averaging):
+"Let $V\sim\mathrm{Unif}(S^{d-1})$, $g\in L^2(\gamma)$, and $v\in S^{d-1}$. Then
+$$\Pi_{\mathrm{Rad}}(g^v) = \sum_{n=0}^\infty\sum_{|\alpha|=n}
+\frac{\langle g, h_n\rangle_{L^2(\gamma)}}{\alpha!}\mathbb{E}[V^\alpha]\,H_\alpha.$$
+The identity holds in $L^2(\gamma^d)$, with the series converging in that norm."
 -/
 /-- **Proposition 3.2 (Hermite expansion after radial averaging).** -/
 theorem radAvg_ridge_expansion {d : ℕ} (v : Vec d) (hv : ‖v‖ = 1) (g : L2R) :
