@@ -13,7 +13,7 @@ open scoped RealInnerProductSpace
 noncomputable section
 
 /- LaTeX — `main.tex`, Corollary 1.2:
-"Let $d\ge2$ and let $n_0\ge2$ be even. Let $F(x)\in L^2(\gamma^d)$ be such
+"Let $d\ge2$ and let $n_0\ge2$ be even. Let $F\in L^2(\gamma^d)$ be such
 that $F(x)=\phi(\|x\|^2/d)$ for some $\phi$ and suppose that
 $\inf_{q\in\mathbb R[t],\ \deg q<n_0/2}\int_0^\infty(\phi(t)-q(t))^2\rho_d(t)\,dt
 \ge a^2>0$.

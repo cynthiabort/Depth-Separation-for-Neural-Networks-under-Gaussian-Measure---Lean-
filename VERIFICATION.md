@@ -16,7 +16,7 @@ match the manuscript. Where the paper says "there exist universal constants",
 Lean either quantifies them existentially in the same order (Theorem 1.3:
 `depth_separation`; Corollary 1.4: `depth_separation_comparison`) or provides
 specific witnesses (Lemma 5.2: `c₁ = exp(-2)/8`,
-`d₀ = chiSquareThreshold`; Lemma 5.3 and Theorem 1.3(1): `c = cEnergy`,
+`d₀ = chiSquareThreshold`; Lemma 5.3 and Theorem 1.3(i): `c = cEnergy`,
 `d₀ = chiSquareThreshold`). The dimension threshold is chosen from the
 Stirling asymptotic, as in the paper, and is at least 16. It is not asserted
 to equal 16.
@@ -47,8 +47,8 @@ in the table below are relative to `GaussianDepthSeparation/`.
 | Theorem 1.1 (ridge lower bound) | `ridge_lower_bound` | `LowerBound.lean` |
 | Corollary 1.2 (polynomial criterion) | `polynomial_criterion` | `PolynomialCriterion.lean` |
 | Theorem 1.3 (depth separation, both parts, existential constants) | `depth_separation` | `DepthSeparationTheorem.lean` |
-| Theorem 1.3(1) with explicit constants | `depth_separation_lower` | `DepthSeparation.lean` |
-| Theorem 1.3(2) (global depth-3 upper bound) | `depth_separation_upper_L2`, `depth_separation_upper_L2_explicit` | `GlobalUpper.lean` |
+| Theorem 1.3(i) with explicit constants | `depth_separation_lower` | `DepthSeparation.lean` |
+| Theorem 1.3(ii) (global depth-3 upper bound) | `depth_separation_upper_L2`, `depth_separation_upper_L2_explicit` | `GlobalUpper.lean` |
 | Corollary 1.4 (matched depth comparison) | `depth_separation_comparison` | `DepthComparison.lean` |
 | Lemma 2.1 (Hermite ridge identity) | `hermite_ridge_identity`, `ridgeHermite_eq_sum` | `Hermite.lean`, `Chaos.lean` |
 | Lemma 2.2 (rotations commute with chaos projections) | `Pn_comp_rotation` | `Chaos.lean` |
@@ -56,7 +56,7 @@ in the table below are relative to `GaussianDepthSeparation/`.
 | Proposition 3.2 (radialized ridge expansion) | `radAvg_ridge_expansion` | `Radialization.lean` |
 | Lemma 3.3 (spherical moments) | `sphereMoment_eq_zero_of_odd`, `sphereMoment_of_even` | `MomentsCore.lean`, `Moments.lean` |
 | Proposition 3.4 (maximal spherical moment and product formula, also extended to `n = 0`) | `abs_sphereMoment_le_Kmom`, `Kmom_eq` | `Moments.lean` |
-| Remark after Proposition 3.4 | `Kmom_le_pow`, `Kmom_le_two_pow` | `Moments.lean` |
+| Remark 3.5 | `Kmom_le_pow`, `Kmom_le_two_pow` | `Moments.lean` |
 | Proposition 4.1 (chaos correlation) | `correlation_eq_zero_of_odd`, `correlation_bound_of_even` | `Correlation.lean` |
 | Corollary 4.2 (tail estimate) | `tail_estimate` | `LowerBound.lean` |
 | Lemma 5.1 (general radial polynomial distance) | `radial_polynomial_distance`, `radial_polynomial_distance_nonneg` | `RadialPolynomial.lean`, `RadialRepresentation.lean`, `RadialMeasure.lean`, `RadialDistance.lean` |
@@ -90,7 +90,7 @@ measurable (needed for the integral to make sense); and
 hypothesis gives `‖P_{≥n₀}F‖ ≥ a` by applying the general Lemma 5.1 directly,
 and Theorem 1.1 applies.
 
-In Theorem 1.3(2) and Corollary 1.4, the width of a depth-3 network is
+In Theorem 1.3(ii) and Corollary 1.4, the width of a depth-3 network is
 `max(w₁, w₂)`, as defined in the paper, and parameters are bounded by
 `C(d + log(1/ε))` with no extra additive constant. In Corollary 1.4,
 `cLower` and `cUpper` witness the paper's Ω and O bounds, and `ε₀`, `A`, `d₁`
@@ -105,9 +105,9 @@ The proof rewrite on 2026-10-16 follows the current `main.tex`, including the
 maximal constant-sign blocks in Lemma 5.3 and its accompanying figure, and
 the explicit quadratic interpolation error in Theorem 1.3(ii).
 The companion `main.pdf` has SHA-256
-`25e32911cfd70a7c322a515101e1f55fcb519c2176acaae5260188740007f487`;
+`70e179a09763f43979d251d0bdb63df27e97c0db6719174aa31c3e064cc00776`;
 the TeX source has SHA-256
-`bd1a2489588bf43ce3373c44f35fe34b861a6bdd672659c7189b209aa6aee78f`.
+`d4d2c256f1aca804f6a78bc9cdd447ba95e67cb432162cc4119054826023da7b`.
 The Git revision containing this map identifies the rewritten Lean source.
 This is a source-level comparison with automated assistance and kernel-checked
 proofs, not a new human review or a formal equivalence relation between prose
@@ -125,8 +125,8 @@ construction is recorded explicitly below.
 | --- | --- |
 | Theorem 1.1 | Both apply the tail estimate, bound the sum of profile norms by `rM`, and rearrange. Lean explicitly separates `A = 0` and proves positivity of the denominator. |
 | Corollary 1.2 | Both use the general Lemma 5.1 to obtain `A ≥ a`, then apply Theorem 1.1 with the smaller error threshold. |
-| Theorem 1.3(1) | Both take `n₀ = d`, `m = 4d√d`, apply Lemma 5.3, use `K_d ≤ 2^(-d/2)`, and invoke Theorem 1.1. |
-| Theorem 1.3(2) | The same clipped-ramp network, interpolation grids, parameter estimates, Gaussian tail bound, and error split are used. The quantitative correspondence is detailed below. |
+| Theorem 1.3(i) | Both take `n₀ = d`, `m = 4d√d`, apply Lemma 5.3, use `K_d ≤ 2^(-d/2)`, and invoke Theorem 1.1. |
+| Theorem 1.3(ii) | The same clipped-ramp network, interpolation grids, parameter estimates, Gaussian tail bound, and error split are used. The quantitative correspondence is detailed below. |
 | Corollary 1.4 | The manuscript states the corollary without a separate proof. Lean supplies the implied combination: `‖g_i‖₂ ≤ 2B²`, the depth-2 lower bound, and the upper theorem with a common `B = A(d + log(1/ε))`. All constants are chosen before `d` and `ε`. |
 | Lemma 2.1 | `hermite_ridge_identity` factors the exponential generating function using `∑ vᵢ² = 1`, expands the coordinatewise product, and compares coefficients of degree `n`, as in the displayed proof. `HermiteGenerating` supplies the formal-power-series identities. |
 | Lemma 2.2 | Both prove that ridge Hermites span a chaos, use homogeneity to extract coefficients, show rotations preserve the span, and use orthogonality to commute with projection. |
@@ -140,7 +140,7 @@ construction is recorded explicitly below.
 | Lemma 5.2 | `chiSqDensity_one_stirling` proves `ρ_d(1)/√d → 1/(2√π)`. The proof chooses a sufficiently large threshold, uses the paper's exact bounds `(t−1)−(t−1)² ≤ log t ≤ t−1`, and derives the density-ratio factor `exp(-1)`. |
 | Lemma 5.3 | Both restrict to the central density window, use `u = πm(t−1)`, discard half-period interiors containing roots, and count maximal consecutive blocks of constant polynomial sign. The checked estimates are `N′ ≥ N−deg q`, `G ≤ deg q+1`, and `2M_opp ≥ N′−G`. Roots at shared endpoints are included. Each opposing half-period contributes `π/2`, giving the paper's `c₁/8` bound. |
 
-For Theorem 1.3(2), both proofs use the grids
+For Theorem 1.3(ii), both proofs use the grids
 `K = ⌈4dR²/η'⌉`, `K' = ⌈2κ(R²+2)/η''⌉` with `η' = η/(8π√d)`, `η'' = η/2`; the
 interpolation errors `4R²/K` and `2κ(R²+2)/K'`; the global bound
 `|𝒩_{R,η}| ≤ 1`; the parameter bound `2(R²+1) + 4π√d`; the radius

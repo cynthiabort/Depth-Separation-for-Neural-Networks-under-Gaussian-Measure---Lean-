@@ -61,8 +61,8 @@ All declarations below are in the `GaussianDepthSeparation` namespace.
 | Theorem 1.1 | `ridge_lower_bound` | [LowerBound.lean](GaussianDepthSeparation/LowerBound.lean) |
 | Corollary 1.2 | `polynomial_criterion` | [PolynomialCriterion.lean](GaussianDepthSeparation/PolynomialCriterion.lean) |
 | Theorem 1.3 | `depth_separation` | [DepthSeparationTheorem.lean](GaussianDepthSeparation/DepthSeparationTheorem.lean) |
-| Theorem 1.3(1) | `depth_separation_lower` | [DepthSeparation.lean](GaussianDepthSeparation/DepthSeparation.lean) |
-| Theorem 1.3(2) | `depth_separation_upper_L2` | [GlobalUpper.lean](GaussianDepthSeparation/GlobalUpper.lean) |
+| Theorem 1.3(i) | `depth_separation_lower` | [DepthSeparation.lean](GaussianDepthSeparation/DepthSeparation.lean) |
+| Theorem 1.3(ii) | `depth_separation_upper_L2` | [GlobalUpper.lean](GaussianDepthSeparation/GlobalUpper.lean) |
 | Corollary 1.4 | `depth_separation_comparison` | [DepthComparison.lean](GaussianDepthSeparation/DepthComparison.lean) |
 | Lemma 5.1 | `radial_polynomial_distance`, `radial_polynomial_distance_nonneg` | [RadialDistance.lean](GaussianDepthSeparation/RadialDistance.lean) |
 
