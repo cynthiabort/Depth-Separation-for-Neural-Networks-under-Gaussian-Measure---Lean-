@@ -47,10 +47,11 @@ theorem depth_separation_comparison :
   have hA1 : 1 ≤ A := le_max_left _ _
   have hApos : 0 < A := lt_of_lt_of_le zero_lt_one hA1
   have hcEnergy : 0 < cEnergy := cEnergy_pos
-  refine ⟨min (cEnergy / 2) (1 / 2), A, 16, by norm_num, cEnergy / (8 * A ^ 2), C,
+  refine ⟨min (cEnergy / 2) (1 / 2), A, chiSquareThreshold, by have := chiSquareThreshold_ge_sixteen; omega, cEnergy / (8 * A ^ 2), C,
     by positivity, lt_of_le_of_lt (min_le_right _ _) (by norm_num),
     hA1, by positivity, hC, ?_⟩
   intro d hde hd ε hε hε₀
+  have hd16 : 16 ≤ d := chiSquareThreshold_ge_sixteen.trans hd
   dsimp only
   set L : ℝ := (d : ℝ) + Real.log (1 / ε)
   have hdpos : 0 < d := by omega

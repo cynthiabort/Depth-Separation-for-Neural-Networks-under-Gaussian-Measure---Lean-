@@ -209,12 +209,13 @@ lemma Net2.norm_profile_le_two_mul_sq {d : ℕ} (N : Net2 d) {B : ℝ}
     _ = 2 * B ^ 2 := by ring
 
 /-- Concrete depth-2 ReLU corollary of the exponential lower bound. -/
-theorem depth_separation_lower_net2 (d : ℕ) (hde : Even d) (hd : 16 ≤ d)
+theorem depth_separation_lower_net2 (d : ℕ) (hde : Even d) (hd : chiSquareThreshold ≤ d)
     (N : Net2 d) {B : ℝ} (hB : 1 ≤ B) (hwt : N.WeightsLe B)
     (happrox : ‖sepTarget d - N.asL2
-      (by omega)‖ ^ 2 ≤
+      (lt_of_lt_of_le (by have := chiSquareThreshold_ge_sixteen; omega) hd)‖ ^ 2 ≤
         cEnergy ^ 2 / 2) :
     cEnergy * 2 ^ ((d : ℝ) / 4) / (8 * B ^ 2) ≤ (N.width : ℝ) := by
+  have hd16 : 16 ≤ d := chiSquareThreshold_ge_sixteen.trans hd
   let hdpos : 0 < d := by omega
   have hlb := depth_separation_lower d hde hd
     (g := fun i => N.profile i)

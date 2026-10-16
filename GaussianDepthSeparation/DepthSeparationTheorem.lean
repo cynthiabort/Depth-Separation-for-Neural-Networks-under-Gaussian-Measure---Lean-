@@ -41,13 +41,13 @@ theorem depth_separation :
               C * ((d : ℝ) ^ 2 * Real.sqrt d) * ((d : ℝ) + Real.log (1 / ε)) / ε ∧
             N.WeightsLe (C * ((d : ℝ) + Real.log (1 / ε)))) := by
   obtain ⟨C, hC, hupper⟩ := depth_separation_upper_L2
-  refine ⟨cEnergy, cEnergy_pos, 16, C, hC, fun d hde hd => ⟨?_, ?_⟩⟩
+  refine ⟨cEnergy, cEnergy_pos, chiSquareThreshold, C, hC, fun d hde hd => ⟨?_, ?_⟩⟩
   · intro M hM r g v hv hgM happrox
     have h := depth_separation_lower d hde hd g v hv hM hgM happrox
     calc cEnergy / (4 * M) * 2 ^ ((d : ℝ) / 4)
         = cEnergy * 2 ^ ((d : ℝ) / 4) / (4 * M) := by ring
       _ ≤ (r : ℝ) := h
-  · exact hupper d (by omega)
+  · exact hupper d (by have := chiSquareThreshold_ge_sixteen; omega)
 
 end
 

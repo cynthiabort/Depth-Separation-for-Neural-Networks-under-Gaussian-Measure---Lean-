@@ -9,7 +9,16 @@ Corollary 1.2, the matched-parameter comparison in Corollary 1.4, and Lemma 5.1
 for arbitrary measurable radial profiles (including profiles defined only on
 `[0, ∞)`). It also contains the supporting analytic results. See
 [VERIFICATION.md](VERIFICATION.md) for the paper-to-Lean map, the statement
-review status for this source version, and the local proof variants.
+review status for this source version, and the correspondence of the proofs.
+
+The paper-facing arguments use the manuscript's generating functions,
+orthogonal radial decomposition, generalized Hölder inequality,
+Funk–Hecke/beta-integral calculation, Stirling estimate, and half-period
+sign-block count. The verification map separately describes the supporting
+proofs of background facts that the paper cites or leaves implicit.
+The lower-bound dimension threshold `chiSquareThreshold` is chosen from
+Stirling's asymptotic, as in the paper; the existential main statements
+retain the manuscript's quantifier order.
 
 ## Build
 

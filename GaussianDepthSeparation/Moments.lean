@@ -4,10 +4,11 @@ remark `K_n ≤ (n/(d+n))^{n/2}` used by Theorem 1.3(i)).
 
 Built on `MomentsCore`: odd vanishing, the factorization
 `𝔼[X^α] = 𝔼[‖X‖^n]·𝔼[V^α]`, product moments and the Stein-sum norm moments.
-The Hölder step of Proposition 3.4 is the weighted AM–GM inequality applied
-pointwise (no `Lp` duality needed).
+The maximal-moment bound follows the manuscript’s generalized Hölder
+inequality, with weights `α i / n` (zero weights contribute factors equal to one).
 -/
-import GaussianDepthSeparation.MomentsCore
+import GaussianDepthSeparation.SphereFunkHecke
+import Mathlib.MeasureTheory.Integral.MeanInequalities
 
 namespace GaussianDepthSeparation
 
@@ -164,75 +165,46 @@ theorem sphereMoment_of_even {d : ℕ} (hd : 0 < d) {α : MIdx d}
 
 /-! ### Proposition 3.4 -/
 
-/-- The `n·e₀` index behind `K_n`. -/
-lemma mdeg_Kidx {d : ℕ} (hd : 0 < d) (n : ℕ) :
-    mdeg (fun i : Fin d => if (i : ℕ) = 0 then n else 0) = n := by
-  rw [mdeg]
-  rw [show (fun i : Fin d => if (i : ℕ) = 0 then n else 0)
-      = fun i => if i = ⟨0, hd⟩ then n else 0 from funext fun i => by
-        congr 1
-        apply propext
-        exact ⟨fun h => Fin.ext h, fun h => by rw [h]⟩]
-  rw [Finset.sum_ite_eq' Finset.univ (⟨0, hd⟩ : Fin d) (fun _ => n),
-    ite_eq_left (Finset.mem_univ _)]
-
-/-- `𝔼[X^{n·e₀}] = (n−1)!!` for even `n`. -/
-lemma integral_mpow_Kidx {d : ℕ} (hd : 0 < d) (n : ℕ) :
-    ∫ x, mpow x (fun i : Fin d => if (i : ℕ) = 0 then n else 0) ∂(γ d)
-      = if Even n then (((n - 1)‼ : ℕ) : ℝ) else 0 := by
-  rw [integral_mpow_gaussian,
-    ← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ (⟨0, hd⟩ : Fin d))]
-  have h0 : ((⟨0, hd⟩ : Fin d) : ℕ) = 0 := rfl
-  have hrest : ∏ j ∈ Finset.univ.erase (⟨0, hd⟩ : Fin d),
-      (if Even (if (j : ℕ) = 0 then n else 0) then
-        ((((if (j : ℕ) = 0 then n else 0) - 1)‼ : ℕ) : ℝ) else 0) = 1 := by
-    refine Finset.prod_eq_one fun j hj => ?_
-    have hj0 : (j : ℕ) ≠ 0 := by
-      intro hcon
-      exact (Finset.ne_of_mem_erase hj) (Fin.ext hcon)
-    rw [ite_eq_right hj0, ite_eq_left ⟨0, rfl⟩]
-    norm_num [Nat.doubleFactorial]
-  rw [hrest, mul_one, ite_eq_left rfl]
-
-/- LaTeX — `main.tex`, Proposition 3.4: "Assume $d\ge 1$. … For even $n\ge 0$,
-set $K_n:=\mathbb E[V_1^n]$ (so that $K_0=1$). … Moreover,
+/- LaTeX — `main.tex`, Proposition 3.4: "Assume $d\ge 1$. … For even $n\ge 2$,
+set $K_n:=\mathbb E[V_1^n]$. … Moreover,
 $$K_n = \frac{(n-1)(n-3)\cdots 1}{d(d+2)\cdots(d+n-2)}
   = \prod_{i=0}^{n/2-1}\frac{2i+1}{d+2i}.$$" -/
 /-- **Proposition 3.4, closed form.** -/
 theorem Kmom_eq {d : ℕ} (hd : 0 < d) {n : ℕ} (hn : Even n) :
     Kmom d n = ∏ i ∈ Finset.range (n / 2), ((2 * i + 1 : ℝ) / (d + 2 * i)) := by
-  obtain ⟨m, hm⟩ := hn
-  have hn2 : n = 2 * m := by omega
-  have hfac := mpow_factor hd (fun i : Fin d => if (i : ℕ) = 0 then n else 0)
-  rw [mdeg_Kidx hd, integral_mpow_Kidx hd, ite_eq_left ⟨m, hm⟩] at hfac
-  have hnormval : ∫ x, ‖x‖ ^ n ∂(γ d) = ∏ i ∈ Finset.range m, ((d : ℝ) + 2 * i) := by
-    rw [hn2, integral_norm_pow_even]
-  rw [hnormval] at hfac
-  have hpos : (0 : ℝ) < ∏ i ∈ Finset.range m, ((d : ℝ) + 2 * i) := by
-    refine Finset.prod_pos fun i _ => ?_
-    have hd' : (0 : ℝ) < d := by exact_mod_cast hd
-    positivity
-  have hdf : (((n - 1)‼ : ℕ) : ℝ) = ∏ i ∈ Finset.range m, (2 * (i : ℝ) + 1) := by
-    rcases Nat.eq_zero_or_pos m with rfl | hm1
-    · have : n = 0 := by omega
-      subst this
-      simp [Nat.doubleFactorial]
-    · obtain ⟨k, hk⟩ : ∃ k, m = k + 1 := ⟨m - 1, by omega⟩
-      subst hk
-      have h1 : n - 1 = 2 * k + 1 := by omega
-      rw [h1, Nat.doubleFactorial_eq_prod_odd]
-      push_cast
-      rw [Finset.prod_range_succ']
-      have h0 : (2 * ((0:ℕ) : ℝ) + 1) = 1 := by norm_num
-      rw [h0, mul_one]
-      exact Finset.prod_congr rfl fun i _ => by push_cast; ring
-  rw [hdf] at hfac
-  have hKn : Kmom d n
-      = (∏ i ∈ Finset.range m, (2 * (i : ℝ) + 1)) / ∏ i ∈ Finset.range m, ((d : ℝ) + 2 * i) := by
-    rw [Kmom]
-    field_simp at hfac ⊢
-    linarith [hfac]
-  rw [hKn, hn2, show 2 * m / 2 = m from by omega, ← Finset.prod_div_distrib]
+  by_cases hd1 : d = 1
+  · subst d
+    -- In dimension one, the sphere consists of ±1.
+    have hK : Kmom 1 n = 1 := by
+      rw [Kmom_eq_coordinate_integral hd]
+      apply integral_eq_const
+      filter_upwards [sphereUnif_ae_norm_one hd] with v hv
+      have hs : v (0 : Fin 1) ^ 2 = 1 := by simpa using sum_sq_eq_one hv
+      have ha : |v (0 : Fin 1)| = 1 := by
+        nlinarith [sq_abs (v (0 : Fin 1)), abs_nonneg (v (0 : Fin 1))]
+      rw [show (⟨0, hd⟩ : Fin 1) = 0 from Subsingleton.elim _ _, ← hn.pow_abs,
+        ha, one_pow]
+    rw [hK]
+    symm
+    apply Finset.prod_eq_one
+    intro i _
+    norm_num only [Nat.cast_one]
+    have hpos : (0 : ℝ) < 1 + 2 * i := by positivity
+    apply (div_eq_one_iff_eq hpos.ne').mpr
+    ring
+  · have hd2 : 2 ≤ d := by omega
+    obtain ⟨m, hm⟩ := hn
+    have hn2 : n = 2 * m := by omega
+    -- Degree-zero Funk–Hecke, followed by u=t² and the beta integral.
+    have hslice := sphere_coordinate_funkHecke hd2 (fun t => t ^ n) (continuous_pow n)
+    rw [← Kmom_eq_coordinate_integral hd] at hslice
+    calc
+      Kmom d n = sphereSliceConstant d *
+          (∫ t in Set.Ioo (-1 : ℝ) 1, t ^ n * sphereSliceWeight d t) := hslice
+      _ = gammaCoordinateMoment d m := by rw [hn2, sphereSlice_even_gamma hd2 m]
+      -- Gamma recurrence gives the displayed finite product.
+      _ = _ := by
+        rw [gammaCoordinateMoment_product hd, hn2, show 2 * m / 2 = m from by omega]
 
 theorem Kmom_nonneg {d : ℕ} (hd : 0 < d) {n : ℕ} (hn : Even n) :
     0 ≤ Kmom d n := by
@@ -305,28 +277,7 @@ theorem Kmom_le_two_pow {d : ℕ} (hd : 0 < d) (hde : Even d) :
   rw [Real.rpow_neg (by norm_num), Real.rpow_natCast]
   rw [one_div, inv_pow]
 
-/-! ### Proposition 3.4, maximality (weighted AM–GM) -/
-
-lemma sphereUnif_ae_norm_one {d : ℕ} (hd : 0 < d) :
-    ∀ᵐ v ∂(sphereUnif d), ‖v‖ = 1 := by
-  rw [sphereUnif]
-  rw [ae_map_iff (Measurable.aemeasurable (by fun_prop))
-    (measurableSet_eq_fun measurable_norm measurable_const)]
-  have hne : ∀ᵐ x ∂(γ d), x ≠ 0 := by
-    have hset : {x : Vec d | ¬ x ≠ 0} = ({0} : Set (Vec d)) := by
-      ext x; simp
-    rw [ae_iff, hset]
-    exact gaussD_singleton_zero hd
-  filter_upwards [hne] with x hx
-  exact norm_smul_inv_norm hx
-
-lemma integrable_sphere_of_bounded {d : ℕ} (hd : 0 < d) {f : Vec d → ℝ}
-    (hf : Measurable f) (C : ℝ) (hC : ∀ v, ‖v‖ = 1 → |f v| ≤ C) :
-    Integrable f (sphereUnif d) := by
-  refine ⟨hf.aestronglyMeasurable, HasFiniteIntegral.of_bounded (C := C) ?_⟩
-  filter_upwards [sphereUnif_ae_norm_one hd] with v hv
-  rw [Real.norm_eq_abs]
-  exact hC v hv
+/-! ### Proposition 3.4, maximality (generalized Hölder) -/
 
 /-- Permutation invariance of the sphere moments. -/
 lemma sphereMoment_comp_perm {d : ℕ} (α : MIdx d) (σ : Equiv.Perm (Fin d)) :
@@ -373,19 +324,13 @@ lemma sphereMoment_single {d : ℕ} (hd : 0 < d) (n : ℕ) (i : Fin d) :
     · rw [ite_eq_right h, ite_eq_right (fun hc => h (hiff.mp hc))]
   rw [← hcomp, sphereMoment_comp_perm]
 
-/- LaTeX — `main.tex`, Proposition 3.4: "Assume $d\ge 1$. … For even $n\ge 0$,
+/- LaTeX — `main.tex`, Proposition 3.4: "Assume $d\ge 1$. … For even $n\ge 2$,
 set $K_n:=\mathbb E[V_1^n]$. Then $|\mathbb{E}[V^\alpha]|\le K_n$ for every
 $\alpha\in\mathbb N^d$ with $|\alpha|=n$." -/
-/-- **Proposition 3.4, maximality** (weighted AM–GM + coordinate symmetry). -/
+/-- **Proposition 3.4, maximality** (generalized Hölder + coordinate symmetry). -/
 theorem abs_sphereMoment_le_Kmom {d : ℕ} (hd : 0 < d) {α : MIdx d} {n : ℕ}
     (hα : mdeg α = n) (hn : Even n) :
     |sphereMoment d α| ≤ Kmom d n := by
-  by_cases hall : ∀ i, Even (α i)
-  swap
-  · push Not at hall
-    rw [sphereMoment_eq_zero_of_odd
-      ⟨hall.choose, hall.choose_spec⟩, abs_zero]
-    exact Kmom_nonneg hd hn
   rcases Nat.eq_zero_or_pos n with rfl | hnpos
   · -- n = 0 : α ≡ 0, both sides equal 1
     have hα0 : α = fun _ => 0 := by
@@ -403,7 +348,7 @@ theorem abs_sphereMoment_le_Kmom {d : ℕ} (hd : 0 < d) {α : MIdx d} {n : ℕ}
       simp
     rw [hone, hK]
     norm_num
-  -- main case: AM–GM pointwise then integrate
+  -- Generalized Hölder with reciprocal exponents αᵢ/n.
   have hnpos' : (0 : ℝ) < n := by exact_mod_cast hnpos
   have hsumw : ∑ i, ((α i : ℝ) / n) = 1 := by
     rw [← Finset.sum_div]
@@ -412,21 +357,6 @@ theorem abs_sphereMoment_le_Kmom {d : ℕ} (hd : 0 < d) {α : MIdx d} {n : ℕ}
       exact_mod_cast congrArg (Nat.cast : ℕ → ℝ) h
     rw [hsn]
     field_simp
-  have hptwise : ∀ v : Vec d, |mpow v α| ≤ ∑ i, ((α i : ℝ) / n) * |v i| ^ n := by
-    intro v
-    have habs : |mpow v α| = ∏ i, |v i| ^ α i := by
-      rw [mpow, Finset.abs_prod]
-      exact Finset.prod_congr rfl fun i _ => by rw [abs_pow]
-    have hfactor : ∀ i : Fin d, |v i| ^ α i = (|v i| ^ n) ^ ((α i : ℝ) / n) := by
-      intro i
-      rw [← Real.rpow_natCast (|v i|) (α i), ← Real.rpow_natCast (|v i|) n,
-        ← Real.rpow_mul (abs_nonneg _)]
-      congr 1
-      field_simp
-    rw [habs, Finset.prod_congr rfl fun i _ => hfactor i]
-    exact Real.geom_mean_le_arith_mean_weighted Finset.univ
-      (fun i => (α i : ℝ) / n) (fun i => |v i| ^ n)
-      (fun i _ => by positivity) (by simpa using hsumw) (fun i _ => by positivity)
   have hmeas : Measurable fun v : Vec d => mpow v α := (continuous_mpow α).measurable
   have hint1 : Integrable (fun v => mpow v α) (sphereUnif d) :=
     integrable_sphere_of_bounded hd hmeas 1 fun v hv => abs_mpow_le_one (le_of_eq hv) α
@@ -451,21 +381,39 @@ theorem abs_sphereMoment_le_Kmom {d : ℕ} (hd : 0 < d) {α : MIdx d} {n : ℕ}
       rw [h1, mul_one]
     rw [integral_congr_ae (ae_of_all _ heq)]
     exact sphereMoment_single hd n i
+  have hHolder := ENNReal.lintegral_prod_norm_pow_le
+    (μ := sphereUnif d) Finset.univ
+    (f := fun i v => ENNReal.ofReal (|v i| ^ n))
+    (p := fun i => (α i : ℝ) / n)
+    (fun i _ => ((hint2 i).aestronglyMeasurable.aemeasurable.ennreal_ofReal))
+    hsumw (fun i _ => by positivity)
+  have hprod (v : Vec d) :
+      (∏ i, ENNReal.ofReal (|v i| ^ n) ^ ((α i : ℝ) / n)) =
+        ENNReal.ofReal |mpow v α| := by
+    simp_rw [ENNReal.ofReal_rpow_of_nonneg (by positivity : 0 ≤ |v _| ^ n)
+      (by positivity : 0 ≤ (α _ : ℝ) / n)]
+    rw [← ENNReal.ofReal_prod_of_nonneg (fun i _ => Real.rpow_nonneg (by positivity) _)]
+    congr 1
+    rw [mpow, Finset.abs_prod]
+    apply Finset.prod_congr rfl
+    intro i _
+    rw [abs_pow, ← Real.rpow_natCast (|v i|) n,
+      ← Real.rpow_mul (abs_nonneg _)]
+    have he : (n : ℝ) * ((α i : ℝ) / n) = α i := by field_simp
+    rw [he, Real.rpow_natCast]
+  have hcoord (i : Fin d) :
+      (∫⁻ v, ENNReal.ofReal (|v i| ^ n) ∂(sphereUnif d)) =
+        ENNReal.ofReal (Kmom d n) := by
+    rw [← ofReal_integral_eq_lintegral_ofReal (hint2 i) (ae_of_all _ fun _ => by positivity),
+      hcoordmom]
+  simp_rw [hprod, hcoord, ENNReal.ofReal_rpow_of_pos (Kmom_pos hd hn)] at hHolder
+  rw [← ofReal_integral_eq_lintegral_ofReal hint1.abs
+      (ae_of_all _ fun _ => abs_nonneg _),
+    ← ENNReal.ofReal_prod_of_nonneg (fun i _ => Real.rpow_nonneg (Kmom_nonneg hd hn) _),
+    ← Real.rpow_sum_of_pos (Kmom_pos hd hn), hsumw, Real.rpow_one] at hHolder
   calc |sphereMoment d α|
-      ≤ ∫ v, |mpow v α| ∂(sphereUnif d) := by
-        rw [sphereMoment]
-        exact abs_integral_le_integral_abs
-    _ ≤ ∫ v, ∑ i, ((α i : ℝ) / n) * |v i| ^ n ∂(sphereUnif d) :=
-        integral_mono_ae hint1.abs
-          (integrable_finsetSum _ fun i _ => (hint2 i).const_mul _)
-          (ae_of_all _ hptwise)
-    _ = ∑ i, ((α i : ℝ) / n) * ∫ v, |v i| ^ n ∂(sphereUnif d) := by
-        rw [integral_finsetSum _ fun i _ => (hint2 i).const_mul _]
-        exact Finset.sum_congr rfl fun i _ => integral_const_mul _ _
-    _ = ∑ i, ((α i : ℝ) / n) * Kmom d n :=
-        Finset.sum_congr rfl fun i _ => by rw [hcoordmom i]
-    _ = Kmom d n := by
-        rw [← Finset.sum_mul, hsumw, one_mul]
+      ≤ ∫ v, |mpow v α| ∂(sphereUnif d) := abs_integral_le_integral_abs
+    _ ≤ Kmom d n := (ENNReal.ofReal_le_ofReal_iff (Kmom_nonneg hd hn)).mp hHolder
 
 end
 

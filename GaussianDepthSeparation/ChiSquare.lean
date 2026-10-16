@@ -1,14 +1,12 @@
 /-
 GaussianDepthSeparation §5 — the normalized chi-square density (Lemma 5.2).
 
-The paper invokes Stirling's formula to control the density at its mode.  We
-use the equivalent probabilistic normalization argument: the gamma law below
-has mean one and variance `2 / d`, so Chebyshev supplies mass near one; the
-same logarithmic comparison as in the paper then makes that mass pointwise.
+As in the paper, Stirling's asymptotic controls the density at one, and
+the quadratic logarithm bound transfers this to the central interval.
 -/
 import GaussianDepthSeparation.GaussianSpace
 import Mathlib.Probability.Distributions.Gamma
-import Mathlib.Probability.Moments.Variance
+import GaussianDepthSeparation.GammaStirling
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.GCongr
 import Mathlib.Tactic.Linarith
@@ -40,8 +38,7 @@ instance chiSqMeasure_isProbabilityMeasure (d : ℕ) [NeZero d] :
   have hd : 0 < d := Nat.pos_of_ne_zero (NeZero.ne d)
   isProbabilityMeasure_gammaMeasure (by positivity) (by positivity)
 
-/-- The first two gamma moments.  Keeping the statement generic makes clear
-that no asymptotic estimate is hidden in Lemma 5.2. -/
+/-- Gamma moments, used for polynomial integrability. -/
 lemma integral_pow_gammaMeasure (a r : ℝ) (ha : 0 < a) (hr : 0 < r)
     (k : ℕ) :
     ∫ x : ℝ, x ^ k ∂(gammaMeasure a r) =
@@ -129,81 +126,6 @@ lemma integrable_radialError_chiSqMeasure {d : ℕ} (hd : 0 < d)
   nlinarith [Real.sin_sq_le_one (π * m * t), sq_nonneg (q.eval t),
     sq_nonneg (sin (π * m * t) + q.eval t)]
 
-lemma integral_id_gammaMeasure (a r : ℝ) (ha : 0 < a) (hr : 0 < r) :
-    ∫ x : ℝ, x ∂(gammaMeasure a r) = a / r := by
-  have h := integral_pow_gammaMeasure a r ha hr 1
-  simp only [pow_one, Nat.cast_one] at h
-  rw [h, Real.Gamma_add_one ha.ne', one_div, Real.inv_rpow hr.le,
-    ← Real.rpow_neg hr.le]
-  have hp : r ^ a * r ^ (-(a + 1)) = r ^ (-1 : ℝ) := by
-    rw [← Real.rpow_add hr]
-    congr 1
-    ring
-  calc
-    r ^ a / Gamma a * (r ^ (-(a + 1)) * (a * Gamma a))
-        = (r ^ a * r ^ (-(a + 1))) * a := by
-          field_simp [(Real.Gamma_pos_of_pos ha).ne']
-    _ = r ^ (-1 : ℝ) * a := by rw [hp]
-    _ = a / r := by rw [Real.rpow_neg_one]; ring
-
-lemma integral_sq_gammaMeasure (a r : ℝ) (ha : 0 < a) (hr : 0 < r) :
-    ∫ x : ℝ, x ^ 2 ∂(gammaMeasure a r) = a * (a + 1) / r ^ 2 := by
-  have h := integral_pow_gammaMeasure a r ha hr 2
-  norm_num only [Nat.cast_ofNat] at h
-  rw [h, show a + 2 = (a + 1) + 1 by ring,
-    Real.Gamma_add_one (by linarith : a + 1 ≠ 0), Real.Gamma_add_one ha.ne',
-    one_div, Real.inv_rpow hr.le, ← Real.rpow_neg hr.le]
-  have hp : r ^ a * r ^ (-(a + 1 + 1)) = r ^ (-2 : ℝ) := by
-    rw [← Real.rpow_add hr]
-    congr 1
-    ring
-  calc
-    r ^ a / Gamma a * (r ^ (-(a + 1 + 1)) * ((a + 1) * (a * Gamma a)))
-        = (r ^ a * r ^ (-(a + 1 + 1))) * (a * (a + 1)) := by
-          field_simp [(Real.Gamma_pos_of_pos ha).ne']
-    _ = r ^ (-2 : ℝ) * (a * (a + 1)) := by rw [hp]
-    _ = a * (a + 1) / r ^ 2 := by
-      rw [show (-2 : ℝ) = -(2 : ℝ) by norm_num, Real.rpow_neg hr.le,
-        Real.rpow_two]
-      field_simp [hr.ne']
-
-lemma integrable_sq_gammaMeasure (a r : ℝ) (ha : 0 < a) (hr : 0 < r) :
-    Integrable (fun x : ℝ => x ^ 2) (gammaMeasure a r) := by
-  apply Integrable.of_integral_ne_zero
-  rw [integral_sq_gammaMeasure a r ha hr]
-  positivity
-
-lemma memLp_id_gammaMeasure (a r : ℝ) (ha : 0 < a) (hr : 0 < r) :
-    MemLp (fun x : ℝ => x) 2 (gammaMeasure a r) := by
-  rw [memLp_two_iff_integrable_sq (by fun_prop)]
-  exact integrable_sq_gammaMeasure a r ha hr
-
-lemma variance_id_gammaMeasure (a r : ℝ) (ha : 0 < a) (hr : 0 < r) :
-    Var[fun x : ℝ => x; gammaMeasure a r] = a / r ^ 2 := by
-  let : IsProbabilityMeasure (gammaMeasure a r) :=
-    isProbabilityMeasure_gammaMeasure ha hr
-  rw [variance_eq_sub (memLp_id_gammaMeasure a r ha hr)]
-  change (∫ x : ℝ, x ^ 2 ∂gammaMeasure a r) -
-      (∫ x : ℝ, x ∂gammaMeasure a r) ^ 2 = _
-  rw [integral_sq_gammaMeasure a r ha hr,
-    integral_id_gammaMeasure a r ha hr]
-  field_simp
-  ring
-
-lemma integral_id_chiSqMeasure {d : ℕ} (hd : 0 < d) :
-    ∫ x : ℝ, x ∂(chiSqMeasure d) = 1 := by
-  rw [chiSqMeasure, integral_id_gammaMeasure _ _ (by positivity) (by positivity)]
-  field_simp
-
-lemma variance_id_chiSqMeasure {d : ℕ} (hd : 0 < d) :
-    Var[fun x : ℝ => x; chiSqMeasure d] = 2 / d := by
-  rw [chiSqMeasure, variance_id_gammaMeasure _ _ (by positivity) (by positivity)]
-  field_simp
-
-lemma memLp_id_chiSqMeasure {d : ℕ} (hd : 0 < d) :
-    MemLp (fun x : ℝ => x) 2 (chiSqMeasure d) :=
-  memLp_id_gammaMeasure _ _ (by positivity) (by positivity)
-
 /-- Exact logarithmic comparison with the value of the density at one. -/
 lemma chiSqDensity_eq_one_mul_exp {d : ℕ} (hd : 0 < d) {t : ℝ} (ht : 0 < t) :
     chiSqDensity d t = chiSqDensity d 1 *
@@ -218,83 +140,75 @@ lemma chiSqDensity_eq_one_mul_exp {d : ℕ} (hd : 0 < d) {t : ℝ} (ht : 0 < t) 
   congr 1
   ring
 
-/-- On the interval used by the paper, the chi-square density loses at most a
-factor `e`. -/
-lemma chiSqDensity_one_mul_exp_neg_one_le {d : ℕ} (hd : 16 ≤ d) {t : ℝ}
+/-- The elementary logarithmic lower bound used in the manuscript. -/
+lemma log_lower_quadratic {t : ℝ} (ht : 1 / 2 ≤ t) :
+    (t - 1) - (t - 1) ^ 2 ≤ log t := by
+  let f : ℝ → ℝ := fun x => log x - (x - 1) + (x - 1) ^ 2
+  have hd (x : ℝ) (hx : 0 < x) :
+      HasDerivAt f ((2 * x - 1) * (x - 1) / x) x := by
+    convert! ((Real.hasDerivAt_log hx.ne').sub ((hasDerivAt_id x).sub_const 1)).add
+      (((hasDerivAt_id x).sub_const 1).pow 2) using 1
+    dsimp [f]
+    field_simp
+    ring
+  have hf (s : Set ℝ) (hs : ∀ x ∈ s, 0 < x) : ContinuousOn f s := by
+    intro x hx
+    exact (hd x (hs x hx)).continuousAt.continuousWithinAt
+  have hmin : f 1 ≤ f t := by
+    rcases le_total t 1 with ht1 | h1t
+    · have hanti : AntitoneOn f (Icc (1 / 2) 1) :=
+        antitoneOn_of_hasDerivWithinAt_nonpos (convex_Icc _ _)
+          (hf _ fun x hx => by linarith [hx.1])
+          (fun x hx => (hd x (by
+            have := interior_subset hx; change x ∈ Icc (1 / 2) 1 at this
+            linarith [this.1])).hasDerivWithinAt)
+          (fun x hx => by
+            have hx' : x ∈ Icc (1 / 2 : ℝ) 1 := interior_subset hx
+            exact div_nonpos_of_nonpos_of_nonneg
+              (mul_nonpos_of_nonneg_of_nonpos (by linarith [hx'.1]) (by linarith [hx'.2]))
+              (by linarith [hx'.1]))
+      exact hanti ⟨ht, ht1⟩ (by constructor <;> norm_num) ht1
+    · have hmono : MonotoneOn f (Ici 1) :=
+        monotoneOn_of_hasDerivWithinAt_nonneg (convex_Ici _)
+          (hf _ fun x hx => by change 1 ≤ x at hx; linarith)
+          (fun x hx => (hd x (by
+            have hx' : 1 ≤ x := interior_subset hx; linarith)).hasDerivWithinAt)
+          (fun x hx => by
+            have hx' : 1 ≤ x := interior_subset hx
+            exact div_nonneg (mul_nonneg (by linarith) (by linarith)) (by linarith))
+      exact hmono (by simp) h1t h1t
+  dsimp [f] at hmin
+  rw [Real.log_one] at hmin
+  linarith
+
+/-- The manuscript's logarithmic comparison: the density loses at most a
+factor `e` on its central interval. The proof already works for `d ≥ 4`. -/
+lemma chiSqDensity_one_mul_exp_neg_one_le {d : ℕ} (hd : 4 ≤ d) {t : ℝ}
     (ht : |t - 1| ≤ 1 / Real.sqrt d) :
     chiSqDensity d 1 * exp (-1) ≤ chiSqDensity d t := by
   have hd0 : (0 : ℝ) < d := by positivity
   have hsqrt : 0 < Real.sqrt d := Real.sqrt_pos.2 hd0
-  have hsqrt4 : 4 ≤ Real.sqrt d := by
-    rw [← Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 4)]
+  have hsqrt2 : 2 ≤ Real.sqrt d := by
+    rw [← Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2)]
     exact Real.sqrt_le_sqrt (by norm_num at hd ⊢; exact_mod_cast hd)
-  have hinv : 1 / Real.sqrt d ≤ 1 / 4 := by
-    exact (one_div_le_one_div_of_le (by norm_num) hsqrt4)
-  have hδlo : -(1 / Real.sqrt d) ≤ t - 1 :=
-    (neg_le_of_abs_le ht)
+  have hinv : 1 / Real.sqrt d ≤ 1 / 2 :=
+    one_div_le_one_div_of_le (by norm_num) hsqrt2
+  have hδlo : -(1 / Real.sqrt d) ≤ t - 1 := neg_le_of_abs_le ht
   have hδhi : t - 1 ≤ 1 / Real.sqrt d := le_of_abs_le ht
-  have ht34 : (3 : ℝ) / 4 ≤ t := by linarith
-  have ht0 : 0 < t := lt_of_lt_of_le (by norm_num) ht34
-  have hloglo := Real.one_sub_inv_le_log_of_pos ht0
+  have ht12 : (1 : ℝ) / 2 ≤ t := by linarith
+  have ht0 : 0 < t := by linarith
+  have hloglo := log_lower_quadratic ht12
   have hloghi := Real.log_le_sub_one_of_pos ht0
   have hsq : (t - 1) ^ 2 ≤ 1 / d := by
-    have := (sq_le_sq₀ (abs_nonneg (t - 1)) (by positivity)).mpr ht
-    rw [sq_abs, div_pow, one_pow, Real.sq_sqrt hd0.le] at this
-    exact this
-  have hquad : (d : ℝ) / 2 * ((t - 1) ^ 2 / t) ≤ 2 / 3 := by
-    have htpos : 0 < t := ht0
-    rw [show (d : ℝ) / 2 * ((t - 1) ^ 2 / t) =
-      ((d : ℝ) / 2 * (t - 1) ^ 2) / t by ring]
-    rw [div_le_iff₀ htpos]
-    have hmul := mul_le_mul_of_nonneg_left hsq (show 0 ≤ (d : ℝ) / 2 by positivity)
-    have hnum : (d : ℝ) / 2 * (t - 1) ^ 2 ≤ 1 / 2 := by
-      calc
-        (d : ℝ) / 2 * (t - 1) ^ 2 ≤ (d : ℝ) / 2 * (1 / d) := hmul
-        _ = 1 / 2 := by field_simp
-    nlinarith [hnum, ht34]
-  have hlogdiff : -((t - 1) ^ 2 / t) ≤ log t - (t - 1) := by
-    have hid : 1 - t⁻¹ = (t - 1) - (t - 1) ^ 2 / t := by
-      field_simp
-      ring
-    rw [hid] at hloglo
-    linarith
+    have h := (sq_le_sq₀ (abs_nonneg (t - 1)) (by positivity)).mpr ht
+    rwa [sq_abs, div_pow, one_pow, Real.sq_sqrt hd0.le] at h
+  have hquad : (d : ℝ) / 2 * (t - 1) ^ 2 ≤ 1 / 2 := by
+    calc
+      (d : ℝ) / 2 * (t - 1) ^ 2 ≤ (d : ℝ) / 2 * (1 / d) := by gcongr
+      _ = 1 / 2 := by field_simp
   have hexp : -1 ≤ ((d : ℝ) / 2 - 1) * log t - (d : ℝ) / 2 * (t - 1) := by
-    have hmain : -((d : ℝ) / 2 * ((t - 1) ^ 2 / t)) ≤
-        (d : ℝ) / 2 * (log t - (t - 1)) := by
-      convert mul_le_mul_of_nonneg_left hlogdiff
-        (by positivity : (0 : ℝ) ≤ (d : ℝ) / 2) using 1
-      all_goals first | ring | rfl
-    nlinarith [hquad, hloghi, hδhi, hinv]
-  rw [chiSqDensity_eq_one_mul_exp (by omega) ht0]
-  exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr hexp)
-    (chiSqDensity_nonneg (by omega) 1)
-
-/-- On the slightly wider Chebyshev interval, the density is at most `e`
-times its value at one. -/
-lemma chiSqDensity_le_one_mul_exp_one {d : ℕ} (hd : 16 ≤ d) {t : ℝ}
-    (ht : |t - 1| < 2 / Real.sqrt d) :
-    chiSqDensity d t ≤ chiSqDensity d 1 * exp 1 := by
-  have hd0 : (0 : ℝ) < d := by positivity
-  have hsqrt : 0 < Real.sqrt d := Real.sqrt_pos.2 hd0
-  have hsqrt4 : 4 ≤ Real.sqrt d := by
-    rw [← Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 4)]
-    exact Real.sqrt_le_sqrt (by norm_num at hd ⊢; exact_mod_cast hd)
-  have hinv : 2 / Real.sqrt d ≤ 1 / 2 := by
-    rw [div_le_iff₀ hsqrt]
-    nlinarith
-  have hδlo : -(2 / Real.sqrt d) < t - 1 := neg_lt_of_abs_lt ht
-  have ht12 : (1 : ℝ) / 2 < t := by linarith
-  have ht0 : 0 < t := by linarith
-  have hloghi := Real.log_le_sub_one_of_pos ht0
-  have hloglo := Real.one_sub_inv_le_log_of_pos ht0
-  have hinvt : t⁻¹ < 2 := by
-    rw [inv_lt_iff_one_lt_mul₀ ht0]
-    nlinarith
-  have hlogneg : -1 < log t := by linarith
-  have hexp : ((d : ℝ) / 2 - 1) * log t - (d : ℝ) / 2 * (t - 1) ≤ 1 := by
-    have hdiff : log t - (t - 1) ≤ 0 := by linarith
-    have hmain : (d : ℝ) / 2 * (log t - (t - 1)) ≤ 0 :=
-      mul_nonpos_of_nonneg_of_nonpos (by positivity) hdiff
+    have hmain := mul_le_mul_of_nonneg_left hloglo
+      (by positivity : (0 : ℝ) ≤ (d : ℝ) / 2)
     nlinarith
   rw [chiSqDensity_eq_one_mul_exp (by omega) ht0]
   exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr hexp)
@@ -318,99 +232,62 @@ lemma integrable_chiSqDensity {d : ℕ} (hd : 0 < d) :
   rw [lintegral_gammaPDF_eq_one (by positivity) (by positivity)]
   norm_num
 
-/-- Chebyshev supplies at least half the mass in the interval of radius
-`2 / √d` about one. -/
-lemma chiSqMeasure_two_sqrt_interval_ge_half {d : ℕ} (hd : 16 ≤ d) :
-    (1 : ℝ) / 2 ≤ (chiSqMeasure d).real
-      (Ioo (1 - 2 / Real.sqrt d) (1 + 2 / Real.sqrt d)) := by
-  let : NeZero d := ⟨by omega⟩
-  let μ := chiSqMeasure d
-  let c : ℝ := 2 / Real.sqrt d
-  have hc : 0 < c := by dsimp [c]; positivity
-  have hcheb := meas_ge_le_variance_div_sq
-    (μ := μ) (memLp_id_chiSqMeasure (by omega)) hc
-  have hmean : ∫ x : ℝ, x ∂μ = 1 := by
-    simpa [μ] using integral_id_chiSqMeasure (d := d) (by omega)
-  have hvar : Var[fun x : ℝ => x; μ] = 2 / d := by
-    simpa [μ] using variance_id_chiSqMeasure (d := d) (by omega)
-  rw [hmean, hvar] at hcheb
-  have hc_sq : c ^ 2 = 4 / d := by
-    dsimp [c]
-    rw [div_pow, Real.sq_sqrt (by positivity)]
+/-- The Stirling asymptotic displayed in the proof of Lemma 5.2:
+`ρ_d(1)/√d → 1/(2√π)`. -/
+theorem chiSqDensity_one_stirling :
+    Filter.Tendsto (fun d : ℕ => chiSqDensity d 1 / sqrt d) Filter.atTop
+      (nhds (1 / (2 * sqrt π))) := by
+  have heq (d : ℕ) : chiSqDensity d 1 = gammaPeak ((d : ℝ) / 2) := by
+    simp only [chiSqDensity, gammaPDFReal, gammaPeak, ite_eq_left zero_le_one,
+      Real.one_rpow, mul_one]
     ring
-  rw [hc_sq] at hcheb
-  have hratio : (2 / (d : ℝ)) / (4 / d) = (1 : ℝ) / 2 := by
-    field_simp
-    norm_num
-  rw [hratio] at hcheb
-  let A : Set ℝ := {x | c ≤ |x - 1|}
-  have hAmeas : MeasurableSet A := by
-    exact measurableSet_le measurable_const (Continuous.measurable (by fun_prop))
-  have hrealA : μ.real A ≤ 1 / 2 := by
-    rw [measureReal_def]
-    have htop : ENNReal.ofReal ((1 : ℝ) / 2) ≠ ∞ := by simp
-    have := ENNReal.toReal_mono htop hcheb
-    simpa [A, c] using this
-  have hcomp : μ.real A + μ.real Aᶜ = 1 := by
-    simpa [μ] using measureReal_add_measureReal_compl (μ := μ) hAmeas
-  have hset : Aᶜ = Ioo (1 - 2 / Real.sqrt d) (1 + 2 / Real.sqrt d) := by
-    ext x
-    simp only [A, c, mem_compl_iff, mem_ofPred_eq, not_le, mem_Ioo, abs_lt]
-    constructor <;> intro h <;> constructor <;> linarith [h.1, h.2]
-  rw [hset] at hcomp
-  linarith
+  simpa only [heq] using tendsto_gammaPeak_dimension
 
-lemma chiSqDensity_one_lower {d : ℕ} (hd : 16 ≤ d) :
-    Real.sqrt d / (8 * exp 1) ≤ chiSqDensity d 1 := by
-  let a : ℝ := 1 - 2 / Real.sqrt d
-  let b : ℝ := 1 + 2 / Real.sqrt d
-  let C : ℝ := chiSqDensity d 1 * exp 1
-  have hmass : (1 : ℝ) / 2 ≤ ∫ t in Ioo a b, chiSqDensity d t := by
-    rw [← chiSqMeasure_real_eq_integral (by omega) measurableSet_Ioo]
-    exact chiSqMeasure_two_sqrt_interval_ge_half hd
-  have hmono : ∫ t in Ioo a b, chiSqDensity d t ≤ ∫ _t in Ioo a b, C := by
-    refine setIntegral_mono_on (integrable_chiSqDensity (by omega)).integrableOn
-      (integrableOn_const (μ := volume) (s := Ioo a b) (C := C)
-        (by simp [Real.volume_Ioo])) measurableSet_Ioo ?_
-    intro t ht
-    exact chiSqDensity_le_one_mul_exp_one hd (by
-      rw [abs_lt]
-      constructor <;> dsimp [a, b] at ht ⊢ <;> linarith [ht.1, ht.2])
-  have hconst : ∫ _t in Ioo a b, C = C * (4 / Real.sqrt d) := by
-    rw [setIntegral_const]
-    simp only [measureReal_def, smul_eq_mul]
-    rw [Real.volume_Ioo]
-    have hsqrt : 0 < Real.sqrt d := by positivity
-    have hba : 0 ≤ b - a := by
-      dsimp [a, b]
-      have : 0 < 2 / Real.sqrt d := div_pos (by norm_num) hsqrt
-      linarith
-    rw [ENNReal.toReal_ofReal hba]
-    dsimp [a, b]
-    ring
-  rw [hconst] at hmono
-  have hsqrt : 0 < Real.sqrt d := by positivity
-  dsimp [C] at hmono
-  have : (1 : ℝ) / 2 ≤ chiSqDensity d 1 * exp 1 * (4 / Real.sqrt d) :=
-    hmass.trans hmono
-  have he : 0 < exp 1 := Real.exp_pos _
-  have hmul := mul_le_mul_of_nonneg_right this hsqrt.le
-  rw [mul_assoc, div_mul_cancel₀ 4 hsqrt.ne'] at hmul
-  apply (div_le_iff₀ (mul_pos (by norm_num) he)).2
-  nlinarith [hmul]
+lemma chiSqDensity_one_half_stirling_eventually :
+    ∀ᶠ d : ℕ in Filter.atTop, sqrt d / (4 * sqrt π) ≤ chiSqDensity d 1 := by
+  have hc : 1 / (4 * sqrt π) < 1 / (2 * sqrt π) := by
+    apply one_div_lt_one_div_of_lt (by positivity)
+    nlinarith [sqrt_pos.2 pi_pos]
+  filter_upwards [chiSqDensity_one_stirling.eventually_const_le hc,
+    Filter.eventually_gt_atTop 0] with d hd hdpos
+  have hs : 0 < sqrt (d : ℝ) := by positivity
+  rw [le_div_iff₀ hs] at hd
+  simpa [div_eq_mul_inv, mul_comm] using hd
+
+/-- The paper's universal sufficiently-large-dimension threshold. -/
+def chiSquareThreshold : ℕ := max 16
+  (Classical.choose (Filter.eventually_atTop.mp chiSqDensity_one_half_stirling_eventually))
+
+lemma chiSquareThreshold_ge_sixteen : 16 ≤ chiSquareThreshold := le_max_left _ _
+
+lemma chiSqDensity_one_half_stirling {d : ℕ} (hd : chiSquareThreshold ≤ d) :
+    sqrt d / (4 * sqrt π) ≤ chiSqDensity d 1 :=
+  Classical.choose_spec (Filter.eventually_atTop.mp chiSqDensity_one_half_stirling_eventually)
+    d ((le_max_right _ _).trans hd)
+
+/-- A convenient smaller constant, chosen after the paper's Stirling estimate. -/
+lemma chiSqDensity_one_lower {d : ℕ} (hd : chiSquareThreshold ≤ d) :
+    sqrt d / (8 * exp 1) ≤ chiSqDensity d 1 := by
+  have hpi : sqrt π ≤ 2 := by
+    nlinarith [sq_sqrt pi_pos.le, sqrt_nonneg π, pi_le_four]
+  have he : 1 ≤ exp (1 : ℝ) := Real.one_le_exp (by norm_num)
+  exact (div_le_div_of_nonneg_left (sqrt_nonneg _) (by positivity)
+    (by nlinarith : 4 * sqrt π ≤ 8 * exp 1)).trans (chiSqDensity_one_half_stirling hd)
 
 /- LaTeX — `main.tex`, Lemma 5.2: "There exist universal constants
 $c_1,d_0>0$ such that, for every $d\ge d_0$, the density $\rho_d$ satisfies
 $\rho_d(t)\ge c_1\sqrt d$ for every $t\in[1-1/\sqrt d,\,1+1/\sqrt d]$."
-Here the constants are explicit: `c₁ = exp(-2)/8` and `d₀ = 16`. -/
+We choose `c₁ = exp(-2)/8`; `d₀ = chiSquareThreshold` comes from Stirling,
+as in the manuscript. -/
 /-- **Lemma 5.2 (local normalized chi-square density bound).** -/
-theorem chi_square_local_density (d : ℕ) (hd : 16 ≤ d) (t : ℝ)
+theorem chi_square_local_density (d : ℕ) (hd : chiSquareThreshold ≤ d) (t : ℝ)
     (ht : t ∈ Set.Icc (1 - 1 / Real.sqrt d) (1 + 1 / Real.sqrt d)) :
     (exp (-2) / 8) * Real.sqrt d ≤ chiSqDensity d t := by
+  have hd16 : 16 ≤ d := chiSquareThreshold_ge_sixteen.trans hd
   have habs : |t - 1| ≤ 1 / Real.sqrt d := by
     rw [abs_le]
     constructor <;> linarith [ht.1, ht.2]
-  have hlocal := chiSqDensity_one_mul_exp_neg_one_le hd habs
+  have hlocal := chiSqDensity_one_mul_exp_neg_one_le (by omega) habs
   have hone := chiSqDensity_one_lower hd
   have he : 0 < exp 1 := Real.exp_pos _
   have hsqrt : 0 ≤ Real.sqrt d := Real.sqrt_nonneg _

@@ -343,11 +343,33 @@ theorem radAvg_eq_starProjection (d : ℕ) (f : L2 d) :
 
 /- LaTeX — `main.tex`, Proposition 3.1: "For every $n\in\mathbb N$, it holds that
 $$P_n\Pi_{\mathrm{Rad}} = \Pi_{\mathrm{Rad}}P_n.$$" -/
-/-- **Proposition 3.1** (via Lemma 2.2). -/
+/-- Lemma 2.2 implies that each chaos projection preserves the radial subspace. -/
+lemma isRadial_Pn {d : ℕ} {f : L2 d} (hf : IsRadial f) (n : ℕ) :
+    IsRadial (Pn d n f) := by
+  intro U
+  rw [← Pn_comp_rotation, hf U]
+
+/-- Self-adjointness then implies preservation of the orthogonal complement,
+as in the proof of Proposition 3.1. -/
+lemma Pn_mem_radial_orthogonal {d n : ℕ} {f : L2 d}
+    (hf : f ∈ (radialSub d)ᗮ) : Pn d n f ∈ (radialSub d)ᗮ := by
+  rw [Submodule.mem_orthogonal] at hf ⊢
+  intro g hg
+  change ⟪g, (chaos d n).starProjection f⟫ = 0
+  rw [← Submodule.inner_starProjection_left_eq_right]
+  exact hf (Pn d n g) (isRadial_Pn hg n)
+
+/-- **Proposition 3.1.** Preserve the radial subspace and its orthogonal
+complement, then use the orthogonal decomposition of `f`. -/
 theorem radAvg_comm_Pn (d n : ℕ) (f : L2 d) :
     Pn d n (radAvgFun f) = radAvgFun (Pn d n f) := by
-  rw [radAvgFun, radAvgFun, ← (Pn d n).integral_comp_comm (integrable_act f)]
-  exact integral_congr_ae (ae_of_all _ fun U => Pn_comp_rotation n U f)
+  rw [radAvg_eq_starProjection, radAvg_eq_starProjection]
+  symm
+  apply Submodule.eq_starProjection_of_mem_orthogonal
+  · exact isRadial_Pn ((radialSub d).starProjection_apply_mem f) n
+  · rw [← map_sub]
+    exact Pn_mem_radial_orthogonal
+      (Submodule.sub_starProjection_mem_orthogonal (K := radialSub d) f)
 
 end
 

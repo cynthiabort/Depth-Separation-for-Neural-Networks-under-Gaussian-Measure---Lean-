@@ -99,11 +99,6 @@ lemma norm_ridgeHermite {d : ℕ} (n : ℕ) (v : Vec d) (hv : ‖v‖ = 1) :
 
 /-! ### Radial functions pair with `ρ_n` -/
 
-lemma isRadial_Pn {d : ℕ} {F : L2 d} (hF : IsRadial F) (n : ℕ) :
-    IsRadial (Pn d n F) := by
-  intro U
-  rw [← Pn_comp_rotation, hF U]
-
 /-- For radial `R`: `⟨R, h_n^v⟩ = ⟨R, ρ_n⟩` (the paper's
 "`⟨P_nF, P_n(g^v)⟩ = ⟨P_nF, Π_Rad P_n(g^v)⟩`" step). -/
 lemma inner_radial_ridgeHermite {d : ℕ} {R : L2 d} (hR : IsRadial R)

@@ -17,16 +17,18 @@ $g_1,\ldots,g_r\in L^2(\gamma)$ with $\|g_j\|_{L^2(\gamma)}\le M$ and all
 $v_1,\ldots,v_r\in S^{d-1}$, if
 $\|F-\sum_{j=1}^r g_j(\langle v_j,\cdot\rangle)\|_{L^2(\gamma^d)}^2\le c^2/2$, then
 $r\ge\frac{c}{4M}\,2^{d/4}$."
-Here the constants are explicit: `c = cEnergy` and `d₀ = 16`.  The statement
+The constants are `c = cEnergy` and `d₀ = chiSquareThreshold`, obtained
+from Stirling’s formula as in the paper.  The statement
 with existential constants, together with part (2), is `depth_separation`.
 -/
 /-- **Theorem 1.3(i) (Depth separation, lower bound).** -/
-theorem depth_separation_lower (d : ℕ) (hde : Even d) (hd : 16 ≤ d)
+theorem depth_separation_lower (d : ℕ) (hde : Even d) (hd : chiSquareThreshold ≤ d)
     {r : ℕ} (g : Fin r → L2R) (v : Fin r → Vec d) (hv : ∀ j, ‖v j‖ = 1)
     {M : ℝ} (hM : 0 < M) (hgM : ∀ j, ‖g j‖ ≤ M)
     (happrox : ‖sepTarget d - ∑ j, ridge (v j) (hv j) (g j)‖ ^ 2 ≤
       cEnergy ^ 2 / 2) :
     cEnergy * 2 ^ ((d : ℝ) / 4) / (4 * M) ≤ (r : ℝ) := by
+  have hd16 : 16 ≤ d := chiSquareThreshold_ge_sixteen.trans hd
   have hdpos : 0 < d := by omega
   have h2d : 2 ≤ d := by omega
   set P := ‖Pge d d (sepTarget d)‖ with hP

@@ -15,8 +15,11 @@ Propositions 3.1, 3.2, 3.4, 4.1) have direct Lean counterparts whose statements
 match the manuscript. Where the paper says "there exist universal constants",
 Lean either quantifies them existentially in the same order (Theorem 1.3:
 `depth_separation`; Corollary 1.4: `depth_separation_comparison`) or provides
-explicit witnesses (Lemma 5.2: `c₁ = exp(-2)/8`, `d₀ = 16`; Lemma 5.3 and
-Theorem 1.3(1): `c = cEnergy`, `d₀ = 16`).
+specific witnesses (Lemma 5.2: `c₁ = exp(-2)/8`,
+`d₀ = chiSquareThreshold`; Lemma 5.3 and Theorem 1.3(1): `c = cEnergy`,
+`d₀ = chiSquareThreshold`). The dimension threshold is chosen from the
+Stirling asymptotic, as in the paper, and is at least 16. It is not asserted
+to equal 16.
 
 Review status: the manuscript reports human review of an earlier version.
 That report does not cover the generalized Lemma 5.1
@@ -24,7 +27,8 @@ That report does not cover the generalized Lemma 5.1
 profiles on `[0, ∞)`), Corollary 1.2 (`polynomial_criterion`), the combined
 Theorem 1.3 (`depth_separation`), the revised upper-bound statement
 (`depth_separation_upper_L2`), or the revised Corollary 1.4
-(`depth_separation_comparison`). These statements have been checked against
+(`depth_separation_comparison`), or the proof rewrites described below. These
+statements and arguments have been checked against
 the manuscript with automated assistance and checked by Lean; this is not a
 claim of a new human review.
 
@@ -51,13 +55,13 @@ in the table below are relative to `GaussianDepthSeparation/`.
 | Proposition 3.1 (radialization commutes with chaos projections) | `radAvg_eq_starProjection`, `radAvg_comm_Pn` | `RadialAverage.lean` |
 | Proposition 3.2 (radialized ridge expansion) | `radAvg_ridge_expansion` | `Radialization.lean` |
 | Lemma 3.3 (spherical moments) | `sphereMoment_eq_zero_of_odd`, `sphereMoment_of_even` | `MomentsCore.lean`, `Moments.lean` |
-| Proposition 3.4 (maximal spherical moment and product formula, `d ≥ 1`, even `n ≥ 0`) | `abs_sphereMoment_le_Kmom`, `Kmom_eq` | `Moments.lean` |
+| Proposition 3.4 (maximal spherical moment and product formula, also extended to `n = 0`) | `abs_sphereMoment_le_Kmom`, `Kmom_eq` | `Moments.lean` |
 | Remark after Proposition 3.4 | `Kmom_le_pow`, `Kmom_le_two_pow` | `Moments.lean` |
 | Proposition 4.1 (chaos correlation) | `correlation_eq_zero_of_odd`, `correlation_bound_of_even` | `Correlation.lean` |
 | Corollary 4.2 (tail estimate) | `tail_estimate` | `LowerBound.lean` |
 | Lemma 5.1 (general radial polynomial distance) | `radial_polynomial_distance`, `radial_polynomial_distance_nonneg` | `RadialPolynomial.lean`, `RadialRepresentation.lean`, `RadialMeasure.lean`, `RadialDistance.lean` |
-| Lemma 5.2 (local chi-square density) | `chi_square_local_density` (explicit constants `c₁ = exp (-2) / 8`, `d₀ = 16`) | `ChiSquare.lean` |
-| Lemma 5.3 (high-chaos energy) | `radialError_weighted_lower`, `energy_lower_bound` (explicit constants `c = cEnergy`, `d₀ = 16`) | `Oscillation.lean`, `EnergyBound.lean` |
+| Lemma 5.2 (local chi-square density) | `chi_square_local_density` (`c₁ = exp (-2) / 8`, `d₀ = chiSquareThreshold`) | `ChiSquare.lean` |
+| Lemma 5.3 (high-chaos energy) | `radialError_weighted_lower`, `energy_lower_bound` (`c = cEnergy`, `d₀ = chiSquareThreshold`) | `Oscillation.lean`, `EnergyBound.lean` |
 
 Supporting claims used as notation or prose in the paper are also checked:
 one- and multivariate Hermite totality (`hermite_hasSum`, `chaos_hasSum_Pn`,
@@ -90,27 +94,31 @@ In Theorem 1.3(2) and Corollary 1.4, the width of a depth-3 network is
 `max(w₁, w₂)`, as defined in the paper, and parameters are bounded by
 `C(d + log(1/ε))` with no extra additive constant. In Corollary 1.4,
 `cLower` and `cUpper` witness the paper's Ω and O bounds, and `ε₀`, `A`, `d₁`
-are existential, exactly as in the statement; the proof uses `d₁ = 16`. The
+are existential, exactly as in the statement; the proof uses
+`d₁ = chiSquareThreshold`. The
 abbreviations are `L = d + log (1/ε)` and `B = A * L`, with the same `B` in
 the `Net2` and `Net3` parameter hypotheses.
 
 ## Proof fidelity
 
-The proof compatibility review on 2026-10-16 compared the mathematical source
-at commit `1c71f14fd96637069f1271f41a2bc08d15c71161` with the compiled
-`main.pdf` and its `main.tex` source. The reviewed PDF has SHA-256
-`fa0ce413e829e6945cbdd67f38e668a4d14e7e678c5183dc13e58d84c183ada3`;
+The proof rewrite on 2026-10-16 follows the current `main.tex`, including the
+maximal constant-sign blocks in Lemma 5.3 and its accompanying figure.
+The companion `main.pdf` has SHA-256
+`bfb1795ccc2cd93d82ae913386252abc148689be5c2d5f0b77741cc8cc6c7e80`;
 the TeX source has SHA-256
-`e1aff3c8a5f15301caa92e4fd8fabe207de12ff53a94694f20e9a9ef3cea63cf`.
-This was a source-level review with automated assistance, not a new human
-review or a formal proof of equivalence between prose and Lean.
+`e7b54da0733337a94be2ad3694043e9ff71ecea939ce85f057b6b3cb3c7b33c3`.
+The Git revision containing this map identifies the rewritten Lean source.
+This is a source-level comparison with automated assistance and kernel-checked
+proofs, not a new human review or a formal equivalence relation between prose
+and proof terms.
 
-No mathematical incompatibility was found. The principal lower- and
-upper-bound arguments agree, and the intermediate estimates have the
-hypotheses and strength needed by the manuscript. Several supporting
-arguments use alternative proofs, and Lean supplies details for claims the
-paper cites or leaves implicit. The correspondence is as follows; source
-paths refer to the modules in the statement map above.
+The main proof routes now follow the paper. In particular, the former
+recurrence proof of Lemma 2.1, Haar-integration proof of Proposition 3.1,
+AM-GM proof and Gaussian-moment calculation in Proposition 3.4,
+Chebyshev proof of Lemma 5.2, and full-period selection in Lemma 5.3 have
+been replaced at their paper-facing declarations. Supporting theorems that
+the paper cites or leaves implicit still require independent proofs; their
+construction is recorded explicitly below.
 
 | Paper result | Comparison of the actual arguments |
 | --- | --- |
@@ -119,17 +127,17 @@ paths refer to the modules in the statement map above.
 | Theorem 1.3(1) | Both take `n₀ = d`, `m = 4d√d`, apply Lemma 5.3, use `K_d ≤ 2^(-d/2)`, and invoke Theorem 1.1. |
 | Theorem 1.3(2) | The same clipped-ramp network, interpolation grids, parameter estimates, Gaussian tail bound, and error split are used. The quantitative correspondence is detailed below. |
 | Corollary 1.4 | The manuscript states the corollary without a separate proof. Lean supplies the implied combination: `‖g_i‖₂ ≤ 2B²`, the depth-2 lower bound, and the upper theorem with a common `B = A(d + log(1/ε))`. All constants are chosen before `d` and `ε`. |
-| Lemma 2.1 | The paper compares coefficients in the Hermite generating function. `hermite_ridge_identity` instead uses the three-term recurrence and finite multi-index reindexing. This is an alternative proof of the same identity. |
+| Lemma 2.1 | `hermite_ridge_identity` factors the exponential generating function using `∑ vᵢ² = 1`, expands the coordinatewise product, and compares coefficients of degree `n`, as in the displayed proof. `HermiteGenerating` supplies the formal-power-series identities. |
 | Lemma 2.2 | Both prove that ridge Hermites span a chaos, use homogeneity to extract coefficients, show rotations preserve the span, and use orthogonality to commute with projection. |
-| Proposition 3.1 | The paper uses preservation of the radial subspace and its orthogonal complement. `radAvg_comm_Pn` instead integrates the commutation identity from Lemma 2.2 over Haar measure. The identification of Haar averaging with radial orthogonal projection is proved separately. |
+| Proposition 3.1 | `isRadial_Pn` uses rotation commutation to preserve the radial subspace. `Pn_mem_radial_orthogonal` uses self-adjointness to preserve its orthogonal complement. `radAvg_comm_Pn` applies the orthogonal decomposition, exactly the paper's argument. Haar averaging is separately identified with radial orthogonal projection. |
 | Proposition 3.2 | Both average the finite ridge-Hermite expansion and extend by continuity in `L²`. Lean expresses the limit step by applying a continuous linear map to `hermite_hasSum`. |
 | Lemma 3.3 | The current manuscript cites the spherical-moment formula without an in-text proof. Lean supplies coordinate-reflection symmetry for odd moments and Gaussian moment calculations plus a Haar/Fubini radius-direction factorization for even moments. This supplements the cited result. |
-| Proposition 3.4 | For maximality, the paper uses generalized Hölder; Lean integrates a weighted AM-GM inequality and uses coordinate symmetry. For the product formula, the paper uses Funk-Hecke and beta/gamma integrals; `Kmom_eq` instead divides the Gaussian coordinate moment by the radial moment, both computed explicitly. Both parts have alternative proofs. |
+| Proposition 3.4 | `abs_sphereMoment_le_Kmom` applies generalized Hölder with weights `αᵢ/n` and coordinate symmetry; zero weights contribute factors equal to one. `Kmom_eq` treats `d = 1` separately, then applies degree-zero Funk–Hecke, evenness, the substitution `u = t²`, Euler's beta integral, and the Gamma recurrence. The extension to `n = 0` is also checked. |
 | Proposition 4.1 | Both use radial averaging, vanishing odd moments, the exact radialized-ridge norm identity, and Cauchy-Schwarz. Lean packages the norm calculation as `norm_rho_sq`. |
 | Corollary 4.2 | Both project the error to the tail, expand the square, bound correlations using Proposition 4.1 and monotonicity of `K_n`, and apply Cauchy-Schwarz. Lean first proves finite Bessel and finite-sum estimates, then passes to the limit through the ridge Hermite series. The full tail-series interpretation for arbitrary `F` is also proved in `MultivariateTotality`. |
 | Lemma 5.1 | Both use the minimizing low-chaos projection, characterize radial low-chaos elements as polynomials in `‖x‖²/d`, and change to the normalized chi-square law. Lean makes the characterization explicit using an even axis polynomial; its converse uses injectivity and equality of finite dimensions. `RadialMeasure` proves the radial change of measure using polar integration and normalization. |
-| Lemma 5.2 | The paper uses Stirling for `ρ_d(1) ≳ √d`. Lean obtains that estimate from normalization, the first two gamma moments, and Chebyshev. Both then compare the logarithmic density ratio near `1`; Lean uses `1 - 1/t ≤ log t ≤ t - 1`, with `d ≥ 16`, to obtain the same factor `exp(-1)`. |
-| Lemma 5.3 | Both reduce to polynomial approximation, restrict to the central density window, and count roots to find opposite-sign sine half-periods. Lean selects root-free full periods in the variable `s = mt`, while the paper groups surviving half-periods into maximal runs after `u = πm(t - 1)`. The resulting local lower bound and the factor `c₁/8` agree. |
+| Lemma 5.2 | `chiSqDensity_one_stirling` proves `ρ_d(1)/√d → 1/(2√π)`. The proof chooses a sufficiently large threshold, uses the paper's exact bounds `(t−1)−(t−1)² ≤ log t ≤ t−1`, and derives the density-ratio factor `exp(-1)`. |
+| Lemma 5.3 | Both restrict to the central density window, use `u = πm(t−1)`, discard half-period interiors containing roots, and count maximal consecutive blocks of constant polynomial sign. The checked estimates are `N′ ≥ N−deg q`, `G ≤ deg q+1`, and `2M_opp ≥ N′−G`. Roots at shared endpoints are included. Each opposing half-period contributes `π/2`, giving the paper's `c₁/8` bound. |
 
 For Theorem 1.3(2), both proofs use the grids
 `K = ⌈4dR²/η'⌉`, `K' = ⌈2κ(R²+2)/η''⌉` with `η' = η/(8π√d)`, `η'' = η/2`; the
@@ -141,15 +149,54 @@ The hidden widths are `4dK` and `2K'+1`; the formal intermediate bound on
 their sum implies the paper's bound on their maximum. Lean's squaring
 coefficients are written as secant slopes, which equal `t_j + t_{j+1}`.
 
-In Lemma 5.3 the two rescalings are related by `u = π(s - m)`, so Lean's
-window `[m - m/√d, m + m/√d]` is exactly the paper's rescaled central
-window. Each root-free full period contributes at least `1/2` in the `s`
-coordinate, and the counting argument supplies at least `m/(4√d)` usable
-periods. The zero polynomial is handled separately. After changing variables
-back, both proofs obtain an unweighted local error at least `1/(8√d)` and
-a weighted squared error at least `c₁/8`. Both take `c = √(c₁/8)`.
-Lean's explicit witnesses are `c₁ = exp(-2)/8` and `d₀ = 16`; the
-manuscript only requires positive universal constants.
+In Lemma 5.3, `SignBlocks` represents each maximal block by its first
+retained half-period. Pairing every matching, noninitial interval with its
+opposing predecessor proves the paper's summed bound `2M_opp ≥ N′−G`.
+The count is implemented in `s = mt`, where half-periods have integer
+endpoints. `phaseRadialError_window_lower` transports it through
+`u = π(s−m)`, and `radialError_local_lower` checks the paper's substitution
+`u = πm(t−1)` with Jacobian `πm`. The zero polynomial is handled separately.
+After changing variables back, the unweighted local error is at least
+`1/(8√d)` and the weighted squared error is at least `c₁/8`.
+Both proofs take `c = √(c₁/8)`.
+
+The background facts are formalized as follows:
+
+- `HermiteGenerating` establishes the one-variable generating function from
+  the Hermite recurrence and uniqueness of a formal differential equation.
+  The ridge identity itself uses generating functions, rather than induction
+  on ridge degree. Formal power series implement coefficient comparison
+  without an additional analytic convergence argument.
+- `sphere_coordinate_funkHecke` in `SphereFunkHecke` proves the degree-zero slice
+  formula for every continuous real function, the background theorem cited
+  in Proposition 3.4. Its independent proof identifies polynomial moments
+  by Gaussian radius-direction factorization and beta integrals, then uses
+  Weierstrass approximation. The private `coordinateMoment_product` retains
+  the earlier Gaussian calculation for this supporting theorem. Thus the
+  final product-formula proof follows the paper, while the full dependency
+  tree still contains a Gaussian-moment proof of the cited slice theorem.
+- `SphereBeta` checks the square substitution, reflection across zero,
+  integrability at the endpoints, and conversion of Euler's beta integral
+  to a real Gamma quotient.
+- `GammaStirling` derives Stirling along the integer and half-integer
+  arguments `d/2` from Mathlib's factorial Stirling theorem and Gamma
+  log-convexity. `ChiSquare` then uses exactly the asymptotic and logarithmic
+  estimates displayed in Lemma 5.2.
+
+The supporting constructions above are additional mathematical details, not
+arguments written out in the paper. Lemma 3.3, the radial-polynomial converse
+in Lemma 5.1, and the limit passage in Corollary 4.2 likewise supply the
+details described in the table. The intended correspondence is the paper's
+mathematical argument at each numbered result, not literal equality of all
+supporting proof steps.
+
+To follow the asymptotic proof, the earlier concrete helper hypothesis
+`16 ≤ d` has been replaced by `chiSquareThreshold ≤ d` throughout the lower
+bound and matched comparison. The threshold is a fixed natural number
+chosen from the Stirling limit and satisfies `16 ≤ chiSquareThreshold`.
+The existential statements of Theorem 1.3 and Corollary 1.4 are unchanged.
+The constant `c₁ = exp(-2)/8` is a convenient smaller universal constant
+deduced from the paper's estimate.
 
 In particular, the proofs of Lemmas 5.1--5.3 retain the manuscript's chain:
 radial low-chaos elements are identified with polynomials in `‖x‖²/d`, the
@@ -162,15 +209,16 @@ constant second-layer unit, exactly as described in the manuscript, so `Net3`
 itself has the paper's displayed architecture, with no separate affine output
 bias.
 
-The review required no changes to mathematical declarations or proof terms.
-It expands the previous proof-fidelity notes, in particular recording the
-alternative product-formula proof and the different proof of Proposition 3.1.
-The local build and axiom audit covered 927 declarations and admitted only
-`propext`, `Classical.choice`, and `Quot.sound`; the standalone audit
-regression tests also passed. These checks used existing local dependencies,
-with a `batteries` checkout warning, rather than a fresh dependency rebuild.
+Validation: `lake build` passed (3,785 jobs), including the mandatory axiom
+audit of 1,008 declarations and the standalone regression tests. A direct
+`lake env lean GaussianDepthSeparationAuditTests.lean` run also passed.
+The audit permits only `propext`, `Classical.choice`, and `Quot.sound`, and
+covers the new supporting modules and their private helpers. These checks
+used Lean `v4.34.0-rc2`, Mathlib commit
+`0cd048027c8b0239cdfe206691bbf2c0a0970078`, and existing local dependencies,
+with a `batteries` checkout warning, rather than a fresh dependency download.
 
-## Organization and dead-code audit
+## Organization
 
 The foundation is split by responsibility: `Euclidean`, `GaussianSpace`,
 `GaussianHermite`, `Symmetry`, `Spectral`, and `Target`. Modules import these
@@ -187,11 +235,7 @@ with named coordinate, sign, cell, endpoint, and knot accessors. Grid selection
 and total-width arithmetic are private lemmas; the final approximation theorem
 assembles their estimates with the existing error and parameter bounds.
 
-The cleanup audit removed an obsolete Hermite-polynomial filtration branch,
-two unused density-positivity lemmas, a duplicate coordinate-bound lemma, and
-two unused action/continuous-linear-map plumbing lemmas.
-The remaining declarations with no later textual consumer are deliberate API
-endpoints: numbered paper results (and their exact-architecture
-forms), `Pge_hasSum`, the concrete `Net2` evaluation/corollary, and the
-`continuous_relu` rule registered for `fun_prop`.  Typeclass instances are used
-implicitly and are not classified as dead declarations.
+The proof rewrite adds `HermiteGenerating`, `SphereBeta`, `SphereFunkHecke`,
+`GammaStirling`, `SineIntervals`, and `SignBlocks`. All are imported transitively
+by the main library and included in its axiom audit. Obsolete ridge-recurrence,
+Chebyshev-density, and full-period-selection helpers have been removed.

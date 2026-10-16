@@ -26,9 +26,10 @@ where $F(x) = \sin(\pi m \|x\|^2/d)$.
 Lemma 5.1 reduces the high-chaos energy to radial polynomial approximation,
 Lemma 5.2 controls the chi-square density on its central window, and a
 root-counting sign argument controls every low-degree polynomial. -/
-theorem energy_lower_bound (d : ℕ) (hd : 16 ≤ d) (n₀ : ℕ)
+theorem energy_lower_bound (d : ℕ) (hd : chiSquareThreshold ≤ d) (n₀ : ℕ)
     (hn₀e : Even n₀) (hn₀ : 2 ≤ n₀) (m : ℝ) (hm : 4 * n₀ * sqrt d ≤ m) :
     cEnergy ≤ ‖Pge d n₀ (radialSine d m)‖ := by
+  have hd16 : 16 ≤ d := chiSquareThreshold_ge_sixteen.trans hd
   have hdpos : 0 < d := by omega
   have hsq : (exp (-2) / 8) / 8 ≤ ‖Pge d n₀ (radialSine d m)‖ ^ 2 := by
     rw [radialSine_polynomial_distance d hdpos n₀ hn₀e hn₀ m]
