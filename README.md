@@ -76,7 +76,4 @@ All declarations below are in the `GaussianDepthSeparation` namespace.
 - `GaussianDepthSeparationAuditTests.lean` tests that the audit rejects forbidden
   dependencies.
 
-The repository contains the standalone formalization, without the dependency
-visualization, generated web assets, or historical working notes. Source
-comments referring to `main.tex` quote statements of the companion
-manuscript, with its numbering; the manuscript itself is not bundled here.
+The repository contains the standalone formalization. The manuscript itself is not bundled here.
