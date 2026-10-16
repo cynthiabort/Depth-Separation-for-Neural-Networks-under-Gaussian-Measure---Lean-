@@ -102,11 +102,12 @@ the `Net2` and `Net3` parameter hypotheses.
 ## Proof fidelity
 
 The proof rewrite on 2026-10-16 follows the current `main.tex`, including the
-maximal constant-sign blocks in Lemma 5.3 and its accompanying figure.
+maximal constant-sign blocks in Lemma 5.3 and its accompanying figure, and
+the explicit quadratic interpolation error in Theorem 1.3(ii).
 The companion `main.pdf` has SHA-256
-`bfb1795ccc2cd93d82ae913386252abc148689be5c2d5f0b77741cc8cc6c7e80`;
+`78dec8007478190b607374b2e0d803717ad14d6e258c23e1a79cc120e665035a`;
 the TeX source has SHA-256
-`e7b54da0733337a94be2ad3694043e9ff71ecea939ce85f057b6b3cb3c7b33c3`.
+`ee09a079f6af83baf7cb8d9ebd46072041547df72fb8e40683a1f85c1327d023`.
 The Git revision containing this map identifies the rewritten Lean source.
 This is a source-level comparison with automated assistance and kernel-checked
 proofs, not a new human review or a formal equivalence relation between prose
@@ -147,7 +148,14 @@ interpolation errors `4R²/K` and `2κ(R²+2)/K'`; the global bound
 `‖F - 𝒩‖² ≤ η² + 4P(‖X‖ > R) ≤ ε²/2 ≤ ε²` with `η = ε/2`.
 The hidden widths are `4dK` and `2K'+1`; the formal intermediate bound on
 their sum implies the paper's bound on their maximum. Lean's squaring
-coefficients are written as secant slopes, which equal `t_j + t_{j+1}`.
+coefficients are written as secant slopes; `gslope_sq_eq` proves that they
+are `t_j + t_{j+1}` and supplies their bound directly from the grid endpoints.
+`hinge_sq_error_on_cell` proves the displayed identity
+`p(t)−t² = (t−t_j)(t_{j+1}−t)`. `hinge_sq_error_sharp` bounds it between zero
+and one quarter of the squared mesh size, `R²/(4K²)`, and
+`hinge_sq_error_le` derives the coarser `4R²/K` used to choose the grid.
+Thus the squaring error no longer uses the general Lipschitz interpolation
+bound; that bound remains appropriate for the sine interpolant.
 
 In Lemma 5.3, `SignBlocks` represents each maximal block by its first
 retained half-period. Pairing every matching, noninitial interval with its
@@ -210,7 +218,7 @@ itself has the paper's displayed architecture, with no separate affine output
 bias.
 
 Validation: `lake build` passed (3,785 jobs), including the mandatory axiom
-audit of 1,008 declarations and the standalone regression tests. A direct
+audit of 1,013 declarations and the standalone regression tests. A direct
 `lake env lean GaussianDepthSeparationAuditTests.lean` run also passed.
 The audit permits only `propext`, `Classical.choice`, and `Quot.sound`, and
 covers the new supporting modules and their private helpers. These checks

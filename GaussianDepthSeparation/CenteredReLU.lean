@@ -21,24 +21,58 @@ def sqApproxC {d : ℕ} (R : ℝ) (M : ℕ) (x : Vec d) : ℝ :=
   ∑ i, (hinge 0 R M (fun t => t ^ 2) (x i) +
     hinge 0 R M (fun t => t ^ 2) (-x i))
 
+/-- For the quadratic, the secant slope is the sum of the cell endpoints. -/
+lemma gslope_sq_eq {a b : ℝ} (hab : a < b) {N : ℕ} (hN : 0 < N) (j : ℕ) :
+    gslope a b N (fun t => t ^ 2) j = gpt a b N j + gpt a b N (j + 1) := by
+  rw [gslope, div_eq_iff (gh_pos hab hN).ne', gpt_succ]
+  ring
+
+/-- The exact quadratic interpolation error displayed in Theorem 1.3(ii). -/
+lemma hinge_sq_error_on_cell {a b : ℝ} (hab : a < b) {N : ℕ} (hN : 0 < N)
+    {t : ℝ} {j : ℕ} (hj : j < N)
+    (hl : gpt a b N j ≤ t) (hr : t ≤ gpt a b N (j + 1)) :
+    hinge a b N (fun s => s ^ 2) t - t ^ 2 =
+      (t - gpt a b N j) * (gpt a b N (j + 1) - t) := by
+  rw [hinge_eq_on_cell _ hab hN hj hl hr, gslope_sq_eq hab hN]
+  ring
+
+/-- The quadratic error is nonnegative and at most one quarter of the squared
+mesh size, as in the manuscript. -/
+lemma hinge_sq_error_sharp {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
+    {t : ℝ} (ht : t ∈ Set.Icc (0 : ℝ) R) :
+    0 ≤ hinge 0 R M (fun s => s ^ 2) t - t ^ 2 ∧
+      hinge 0 R M (fun s => s ^ 2) t - t ^ 2 ≤ (gh 0 R M) ^ 2 / 4 := by
+  obtain ⟨j, hj, hl, hr⟩ := exists_cell hR hM ht
+  rw [hinge_sq_error_on_cell hR hM hj hl hr]
+  refine ⟨mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), ?_⟩
+  rw [gpt_succ]
+  nlinarith [sq_nonneg (t - gpt 0 R M j - gh 0 R M / 2)]
+
+/-- The paper's `R²/(4M²)` bound implies the coarser `4R²/M` used to choose
+its interpolation grid. -/
+lemma hinge_sq_error_le {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
+    {t : ℝ} (ht : t ∈ Set.Icc (0 : ℝ) R) :
+    |hinge 0 R M (fun s => s ^ 2) t - t ^ 2| ≤ 2 * (2 * R) * gh 0 R M := by
+  have h := hinge_sq_error_sharp hR hM ht
+  rw [abs_of_nonneg h.1]
+  have hgh := gh_pos hR hM
+  have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  have hghR : gh 0 R M ≤ R := by
+    simpa only [gh, sub_zero] using (div_le_self hR.le hM1)
+  nlinarith [h.2, mul_nonneg hgh.le (sub_nonneg.mpr hghR)]
+
 /-- Each coordinate contributes only one nonconstant half-line interpolant. -/
 lemma sqApproxC_coord_error {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
     {t : ℝ} (ht : |t| ≤ R) :
     |hinge 0 R M (fun s => s ^ 2) t +
         hinge 0 R M (fun s => s ^ 2) (-t) - t ^ 2| ≤
       2 * (2 * R) * gh 0 R M := by
-  have hlip : ∀ s ∈ Set.Icc (0 : ℝ) R, ∀ u ∈ Set.Icc (0 : ℝ) R,
-      |s ^ 2 - u ^ 2| ≤ 2 * R * |s - u| := by
-    intro s hs u hu
-    exact sq_lipschitz s ⟨by linarith [hs.1], hs.2⟩
-      u ⟨by linarith [hu.1], hu.2⟩
   by_cases h : 0 ≤ t
   · have htmem : t ∈ Set.Icc (0 : ℝ) R := ⟨h, (abs_le.mp ht).2⟩
     rw [hinge_eq_of_le (a := 0) (b := R) (N := M) (fun s => s ^ 2)
       hR hM (neg_nonpos.mpr h)]
     norm_num
-    exact hinge_approx (a := 0) (b := R) (N := M) (fun s => s ^ 2) (2 * R)
-      hR hM hlip htmem
+    exact hinge_sq_error_le hR hM htmem
   · have hneg : 0 ≤ -t := by linarith
     have htmem : -t ∈ Set.Icc (0 : ℝ) R := by
       rw [abs_le] at ht
@@ -47,8 +81,7 @@ lemma sqApproxC_coord_error {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
       hR hM (le_of_not_ge h)]
     norm_num
     simpa only [neg_sq] using
-      (hinge_approx (a := 0) (b := R) (N := M) (fun s => s ^ 2) (2 * R)
-        hR hM hlip htmem)
+      (hinge_sq_error_le hR hM htmem)
 
 /-- Centered squaring error: `4dR²/M`. -/
 theorem sqApproxC_error {d : ℕ} {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
@@ -296,11 +329,6 @@ theorem net3c_weights {d : ℕ} {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
   have hR2 : 0 ≤ R ^ 2 := sq_nonneg R
   have hRle : R ≤ R ^ 2 + 1 := by nlinarith [sq_nonneg (R - 1)]
   have hbase : 1 ≤ 2 * (R ^ 2 + 1) + κ := by nlinarith
-  have hlip : ∀ s ∈ Set.Icc (0 : ℝ) R, ∀ u ∈ Set.Icc (0 : ℝ) R,
-      |s ^ 2 - u ^ 2| ≤ 2 * R * |s - u| := by
-    intro s hs u hu
-    exact sq_lipschitz s ⟨by linarith [hs.1], hs.2⟩
-      u ⟨by linarith [hu.1], hu.2⟩
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · intro j
     simp only [net3c, firstWeight, PiLp.norm_single, Real.norm_eq_abs]
@@ -317,8 +345,12 @@ theorem net3c_weights {d : ℕ} {R : ℝ} (hR : 0 < R) {M : ℕ} (hM : 0 < M)
       have hjM : (cell j : ℕ) + 1 ≤ M := by
         have := (cell j).isLt
         omega
-      have hg := abs_gslope_le (a := 0) (b := R) hR hM
-        (fun t => t ^ 2) (2 * R) hlip hjM
+      have hg : |gslope 0 R M (fun t => t ^ 2) (cell j : ℕ)| ≤ 2 * R := by
+        rw [gslope_sq_eq hR hM]
+        have hl := gpt_mem hR hM (show (cell j : ℕ) ≤ M from by omega)
+        have hr := gpt_mem hR hM hjM
+        rw [abs_of_nonneg (by linarith [hl.1, hr.1])]
+        linarith [hl.2, hr.2]
       have hbound : |gslope 0 R M (fun t => t ^ 2)
           (cell j : ℕ)| ≤ 2 * (R ^ 2 + 1) + κ := by
         nlinarith [hg, hRle]

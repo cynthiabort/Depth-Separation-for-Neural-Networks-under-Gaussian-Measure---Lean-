@@ -13,8 +13,9 @@ review status for this source version, and the correspondence of the proofs.
 
 The paper-facing arguments use the manuscript's generating functions,
 orthogonal radial decomposition, generalized Hölder inequality,
-Funk–Hecke/beta-integral calculation, Stirling estimate, and half-period
-sign-block count. The verification map separately describes the supporting
+Funk–Hecke/beta-integral calculation, Stirling estimate, half-period
+sign-block count, and exact quadratic interpolation error. The verification
+map separately describes the supporting
 proofs of background facts that the paper cites or leaves implicit.
 The lower-bound dimension threshold `chiSquareThreshold` is chosen from
 Stirling's asymptotic, as in the paper; the existential main statements
