@@ -105,9 +105,9 @@ The proof rewrite on 2026-10-16 follows the current `main.tex`, including the
 maximal constant-sign blocks in Lemma 5.3 and its accompanying figure, and
 the explicit quadratic interpolation error in Theorem 1.3(ii).
 The companion `main.pdf` has SHA-256
-`78dec8007478190b607374b2e0d803717ad14d6e258c23e1a79cc120e665035a`;
+`25e32911cfd70a7c322a515101e1f55fcb519c2176acaae5260188740007f487`;
 the TeX source has SHA-256
-`ee09a079f6af83baf7cb8d9ebd46072041547df72fb8e40683a1f85c1327d023`.
+`bd1a2489588bf43ce3373c44f35fe34b861a6bdd672659c7189b209aa6aee78f`.
 The Git revision containing this map identifies the rewritten Lean source.
 This is a source-level comparison with automated assistance and kernel-checked
 proofs, not a new human review or a formal equivalence relation between prose
